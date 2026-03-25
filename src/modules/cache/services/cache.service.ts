@@ -61,4 +61,17 @@ export class CacheService implements OnModuleInit, OnModuleDestroy, CachePort {
   async setJson<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
     await this.set(key, JSON.stringify(value), ttlSeconds);
   }
+
+  async incr(key: string): Promise<number> {
+    return this.redis.incr(this.ns(key));
+  }
+
+  async acquireLock(key: string, ttlSeconds: number): Promise<boolean> {
+    const result = await this.redis.set(this.ns(key), '1', 'EX', ttlSeconds, 'NX');
+    return result === 'OK';
+  }
+
+  async releaseLock(key: string): Promise<void> {
+    await this.redis.del(this.ns(key));
+  }
 }

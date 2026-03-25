@@ -17,6 +17,7 @@ import type { TCreateTicket } from '../dto/create-ticket.dto';
 @Injectable()
 export class CreateTicketUseCase {
   private readonly CACHE_TTL_SECONDS = 60 * 5;
+  private readonly LIST_VERSION_KEY = 'tickets:all:version';
 
   constructor(
     private readonly ticketRepository: TicketRepositoryPort,
@@ -29,33 +30,37 @@ export class CreateTicketUseCase {
     const { title, description, userId } = input;
     const now = new Date();
 
-    const ticket = await this.ticketRepository.create(
-      TicketEntity.create({
-        id: randomUUID(),
-        title,
-        description: Description.create(description),
-        status: TicketStatus.OPEN,
-        createdAt: now,
-        updatedAt: now,
-        userId,
-      }),
-    );
+    const ticket = TicketEntity.create({
+      id: randomUUID(),
+      title,
+      description: Description.create(description),
+      status: TicketStatus.OPEN,
+      createdAt: now,
+      updatedAt: now,
+      userId,
+    });
+
+    const createdTicket = await this.ticketRepository.create(ticket);
+
+    await this.cachePort.incr(this.LIST_VERSION_KEY);
 
     await this.cachePort.setJson(
-      ticketCacheKey(ticket.id),
-      ticket,
+      ticketCacheKey(createdTicket.id),
+      createdTicket,
       this.CACHE_TTL_SECONDS,
     );
+
+    const message = `Your ticket "${createdTicket.title}" has been created successfully.`;
 
     const notification = await this.notificationRepository.create(
       NotificationEntity.create({
         id: randomUUID(),
         channel: NotificationChannel.EMAIL,
         recipient: userId,
-        subject: `Ticket created: ${ticket.title}`,
-        body: `Your ticket "${ticket.title}" has been created successfully.`,
+        subject: `Ticket created: ${createdTicket.title}`,
+        body: message,
         status: NotificationStatus.PENDING,
-        ticketId: ticket.id,
+        ticketId: createdTicket.id,
         userId,
         sentAt: null,
         createdAt: now,
@@ -64,12 +69,12 @@ export class CreateTicketUseCase {
 
     await this.notificationQueue.enqueueTicketCreated({
       notificationId: notification.id,
-      ticketId: ticket.id,
-      ticketTitle: ticket.title,
+      ticketId: createdTicket.id,
+      ticketTitle: createdTicket.title,
       userId,
       recipient: notification.recipient,
     });
 
-    return ticket;
+    return createdTicket;
   }
 }

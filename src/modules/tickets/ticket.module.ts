@@ -9,6 +9,7 @@ import { CacheModule } from '../cache/cache.module';
 import { CachePort } from 'src/common/ports/cache/cache.ports';
 import { CacheService } from '../cache/services/cache.service';
 import { NotificationModule } from '../notifications/notification.module';
+import { TicketCacheKeyBuilder } from './application/cache/ticket-key-buider.cache';
 
 @Module({
   imports: [CacheModule, NotificationModule],
@@ -17,6 +18,7 @@ import { NotificationModule } from '../notifications/notification.module';
     CreateTicketUseCase,
     FindAllTicketsUseCase,
     UpdateTicketUseCase,
+    TicketCacheKeyBuilder,
     {
       provide: TicketRepositoryPort,
       useClass: TicketRepository,
