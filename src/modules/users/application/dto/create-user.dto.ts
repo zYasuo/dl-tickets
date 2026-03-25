@@ -1,3 +1,4 @@
+import { createZodDto } from 'nestjs-zod/dto';
 import { z } from 'zod';
 import { Email } from '../../domain/vo/email.vo';
 import { Name } from '../../domain/vo/name.vo';
@@ -16,3 +17,5 @@ export const SCreateUser = z.object({
 });
 
 export type TCreateUser = z.infer<typeof SCreateUser>;
+
+export class CreateUserBodyDto extends createZodDto(SCreateUser) {}

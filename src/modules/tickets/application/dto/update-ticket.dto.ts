@@ -1,3 +1,4 @@
+import { createZodDto } from 'nestjs-zod/dto';
 import { z } from 'zod';
 import { Description } from '../../domain/vo/description.vo';
 import { TicketStatus } from '../../domain/entities/ticket.entity';
@@ -13,3 +14,5 @@ export const SUpdateTicket = z.object({
 });
 
 export type TUpdateTicket = z.infer<typeof SUpdateTicket>;
+
+export class UpdateTicketBodyDto extends createZodDto(SUpdateTicket) {}

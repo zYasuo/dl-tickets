@@ -1,3 +1,4 @@
+import { createZodDto } from 'nestjs-zod/dto';
 import { z } from 'zod';
 
 export const SFindAllTicket = z.object({
@@ -7,3 +8,5 @@ export const SFindAllTicket = z.object({
 });
 
 export type TFindAllTicket = z.infer<typeof SFindAllTicket>;
+
+export class FindAllTicketsQueryDto extends createZodDto(SFindAllTicket) {}

@@ -1,16 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
-import { toTicketPublicHttp, type TTicketPublicHttp } from '../mappers/ticket-http.mapper';
+import type { PaginatedResult } from 'src/common/pagination/pagination.types';
 import { CreateTicketUseCase } from 'src/modules/tickets/application/use-case/create-ticket.use-case';
 import { FindAllTicketsUseCase } from 'src/modules/tickets/application/use-case/find-all-tickets.use-case';
 import { UpdateTicketUseCase } from 'src/modules/tickets/application/use-case/update-ticket.use-case';
@@ -26,9 +17,11 @@ import {
   SUpdateTicket,
   type TUpdateTicket,
 } from 'src/modules/tickets/application/dto/update-ticket.dto';
-import type { PaginatedResult } from 'src/common/pagination/pagination.types';
+import { ApiTickets, TicketDoc } from '../docs/ticket-doc.decorator';
+import { toTicketPublicHttp, type TTicketPublicHttp } from '../mappers/ticket-http.mapper';
 
 @Controller('tickets')
+@ApiTickets()
 export class TicketController {
   constructor(
     private readonly createTicketUseCase: CreateTicketUseCase,
@@ -37,7 +30,7 @@ export class TicketController {
   ) {}
 
   @RateLimitEndpoint('tickets-list')
-  @Get()
+  @TicketDoc.List()
   async findAll(
     @Query(new ZodValidationPipe(SFindAllTicket)) query: TFindAllTicket,
   ): Promise<PaginatedResult<TTicketPublicHttp>> {
@@ -50,7 +43,7 @@ export class TicketController {
   }
 
   @RateLimitEndpoint('tickets-create')
-  @Post()
+  @TicketDoc.Create()
   async create(
     @Body(new ZodValidationPipe(SCreateTicket)) dto: TCreateTicket,
   ): Promise<TTicketPublicHttp> {
@@ -59,7 +52,7 @@ export class TicketController {
   }
 
   @RateLimitEndpoint('tickets-update')
-  @Patch(':id')
+  @TicketDoc.Update()
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body(new ZodValidationPipe(SUpdateTicket)) dto: TUpdateTicket,
