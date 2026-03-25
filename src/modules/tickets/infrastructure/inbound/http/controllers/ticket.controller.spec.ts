@@ -45,6 +45,13 @@ describe('TicketController (integration)', () => {
     return request(app.getHttpServer()).get('/api/v1/tickets').query({ limit: 200 }).expect(400);
   });
 
+  it('returns 400 when createdFrom is after createdTo', () => {
+    return request(app.getHttpServer())
+      .get('/api/v1/tickets')
+      .query({ page: 1, limit: 10, createdFrom: '2025-06-01', createdTo: '2025-01-01' })
+      .expect(400);
+  });
+
   it('returns 200 and forwards query to use case', async () => {
     findAllTickets.execute.mockResolvedValue({
       data: [],
@@ -63,6 +70,35 @@ describe('TicketController (integration)', () => {
 
     expect(findAllTickets.execute).toHaveBeenCalledWith(
       expect.objectContaining({ page: 1, limit: 10 }),
+    );
+  });
+
+  it('returns 200 and forwards createdFrom/createdTo to use case', async () => {
+    findAllTickets.execute.mockResolvedValue({
+      data: [],
+      meta: {
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+        nextCursor: null,
+      },
+    });
+
+    await request(app.getHttpServer())
+      .get('/api/v1/tickets')
+      .query({ page: 1, limit: 10, createdFrom: '2025-01-01', createdTo: '2025-01-31' })
+      .expect(200);
+
+    expect(findAllTickets.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        page: 1,
+        limit: 10,
+        createdFrom: '2025-01-01',
+        createdTo: '2025-01-31',
+      }),
     );
   });
 

@@ -1,9 +1,3 @@
-export type PaginationParams = {
-  page: number;
-  limit: number;
-  cursor?: string;
-};
-
 export type PaginatedResult<T> = {
   data: T[];
   meta: {

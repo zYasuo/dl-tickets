@@ -27,6 +27,15 @@ export class TicketDoc {
       ApiQuery({ name: 'page', required: false, type: Number, example: 1 }),
       ApiQuery({ name: 'limit', required: false, type: Number, example: 10 }),
       ApiQuery({ name: 'cursor', required: false, type: String, format: 'uuid' }),
+      ApiQuery({ name: 'createdFrom', required: false, type: String, example: '2025-01-01' }),
+      ApiQuery({ name: 'createdTo', required: false, type: String, example: '2025-12-31' }),
+      ApiQuery({
+        name: 'sortBy',
+        required: false,
+        enum: ['title', 'status', 'updatedAt', 'createdAt'],
+      }),
+      ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] }),
+      ApiQuery({ name: 'status', required: false, enum: ['OPEN', 'IN_PROGRESS', 'DONE'] }),
       ApiResponse({
         status: 200,
         description:

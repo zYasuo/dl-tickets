@@ -5,6 +5,7 @@ import { NotificationRepositoryPort } from 'src/modules/notifications/domain/por
 import { NotificationQueuePort } from 'src/modules/notifications/domain/ports/queue/notification-queue.port';
 import { TicketEntity, TicketStatus } from '../../domain/entities/ticket.entity';
 import { TicketRepositoryPort } from '../../domain/ports/repository/ticket.repository.port';
+import { encodeTicketRow } from '../mappers/ticket-cache.codec';
 import { ticketCacheKey } from '../cache/ticket-cache.key';
 import { CreateTicketUseCase } from './create-ticket.use-case';
 
@@ -77,7 +78,7 @@ describe('CreateTicketUseCase', () => {
     expect(cachePort.incr).toHaveBeenCalledWith('tickets:all:version');
     expect(cachePort.setJson).toHaveBeenCalledWith(
       ticketCacheKey(result.id),
-      expect.any(Object),
+      encodeTicketRow(result),
       60 * 5,
     );
     expect(notificationRepository.create).toHaveBeenCalled();

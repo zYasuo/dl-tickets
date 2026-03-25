@@ -14,7 +14,7 @@ import { rateLimitConfig } from '../src/config/rate-limit.config';
 import { CreateTicketUseCase } from '../src/modules/tickets/application/use-case/create-ticket.use-case';
 import { FindAllTicketsUseCase } from '../src/modules/tickets/application/use-case/find-all-tickets.use-case';
 import { UpdateTicketUseCase } from '../src/modules/tickets/application/use-case/update-ticket.use-case';
-import { TicketCacheKeyBuilder } from '../src/modules/tickets/application/cache/ticket-key-buider.cache';
+import { TicketCacheKeyBuilder } from '../src/modules/tickets/application/cache/ticket-key-builder.cache';
 import { TicketRepositoryPort } from '../src/modules/tickets/domain/ports/repository/ticket.repository.port';
 import { TicketController } from '../src/modules/tickets/infrastructure/inbound/http/controllers/ticket.controller';
 import { NotificationRepositoryPort } from '../src/modules/notifications/domain/ports/repository/notification.repository.port';

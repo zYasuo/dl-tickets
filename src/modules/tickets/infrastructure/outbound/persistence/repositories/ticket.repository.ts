@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { ConcurrencyError } from 'src/common/errors/concurrency.error';
 import { PrismaService } from 'nestjs-prisma';
 import { TicketEntity, TicketStatus } from 'src/modules/tickets/domain/entities/ticket.entity';
 import { TicketRepositoryPort } from 'src/modules/tickets/domain/ports/repository/ticket.repository.port';
+import type { TicketListCriteria } from 'src/modules/tickets/domain/criteria/ticket-list.criteria';
 import { Description } from 'src/modules/tickets/domain/vo/description.vo';
-import type {
-  PaginatedResult,
-  PaginationParams,
-} from 'src/common/pagination/pagination.types';
+import type { PaginatedResult } from 'src/common/pagination/pagination.types';
 
 @Injectable()
 export class TicketRepository extends TicketRepositoryPort {
@@ -15,18 +14,49 @@ export class TicketRepository extends TicketRepositoryPort {
     super();
   }
 
-  async findAll(
-    params: PaginationParams,
-  ): Promise<PaginatedResult<TicketEntity>> {
-    const { page, limit, cursor } = params;
+  async findAll(criteria: TicketListCriteria): Promise<PaginatedResult<TicketEntity>> {
+    const {
+      page,
+      limit,
+      cursor,
+      createdFrom,
+      createdTo,
+      sortBy,
+      sortOrder,
+      status,
+    } = criteria;
 
-    const where = cursor ? { id: { gt: cursor } } : {};
+    const andParts: Prisma.TicketsWhereInput[] = [];
+
+    const createdAt: { gte?: Date; lte?: Date } = {};
+    if (createdFrom) {
+      createdAt.gte = new Date(`${createdFrom}T00:00:00.000Z`);
+    }
+    if (createdTo) {
+      createdAt.lte = new Date(`${createdTo}T23:59:59.999Z`);
+    }
+    if (Object.keys(createdAt).length > 0) {
+      andParts.push({ createdAt });
+    }
+    if (cursor) {
+      andParts.push({ id: { gt: cursor } });
+    }
+    if (status) {
+      andParts.push({ status });
+    }
+
+    const where: Prisma.TicketsWhereInput =
+      andParts.length === 0 ? {} : { AND: andParts };
     const skip = cursor ? 0 : (page - 1) * limit;
+
+    const orderBy: Prisma.TicketsOrderByWithRelationInput = {
+      [sortBy]: sortOrder,
+    };
 
     const [rows, total] = await Promise.all([
       this.prisma.tickets.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         skip,
         take: limit,
       }),

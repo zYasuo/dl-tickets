@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { TicketRepositoryPort } from '../../domain/ports/repository/ticket.repository.port';
-import { TicketEntity } from '../../domain/entities/ticket.entity';
-import type { TFindAllTicket } from '../dto/find-all-ticket.dto';
 import type { PaginatedResult } from 'src/common/pagination/pagination.types';
 import { CachePort } from 'src/common/ports/cache/cache.ports';
-import { TicketCacheKeyBuilder } from '../cache/ticket-key-buider.cache';
 import { buildCacheLockKey, CACHE_LOCK_POLICY } from 'src/common/cache/cache-lock.policy';
+import { TicketEntity } from '../../domain/entities/ticket.entity';
+import type { TicketListCriteria } from '../../domain/criteria/ticket-list.criteria';
+import { TicketRepositoryPort } from '../../domain/ports/repository/ticket.repository.port';
+import { TicketCacheKeyBuilder } from '../cache/ticket-key-builder.cache';
+import type { TFindAllTicket } from '../dto/find-all-ticket.dto';
+import {
+  encodeTicketListPage,
+  tryDecodeTicketListCache,
+} from '../mappers/ticket-cache.codec';
 
 @Injectable()
 export class FindAllTicketsUseCase {
@@ -18,62 +23,76 @@ export class FindAllTicketsUseCase {
   ) {}
 
   async execute(input: TFindAllTicket): Promise<PaginatedResult<TicketEntity>> {
-    const { page, limit, cursor } = input;
-
-    const cacheKey = await this.cacheKeyBuilder.buildListKey(page, limit, cursor);
+    const criteria = this.toCriteria(input);
+    const cacheKey = await this.cacheKeyBuilder.buildListKey(criteria);
     const lockKey = buildCacheLockKey(cacheKey);
 
-    const cached = await this.cachePort.getJson<PaginatedResult<TicketEntity>>(cacheKey);
-
-    if (cached) {
-      return cached;
+    const fromCache = tryDecodeTicketListCache(await this.cachePort.getJson<unknown>(cacheKey));
+    if (fromCache) {
+      return fromCache;
     }
 
     const lockAcquired = await this.cachePort.acquireLock(lockKey, CACHE_LOCK_POLICY.ttlSeconds);
 
     if (!lockAcquired) {
-      const waitedResult = await this.waitForCache<PaginatedResult<TicketEntity>>(cacheKey);
-      if (waitedResult) {
-        return waitedResult;
+      const waitedRaw = await this.waitForCacheRaw(cacheKey);
+      const waited = tryDecodeTicketListCache(waitedRaw);
+      if (waited) {
+        return waited;
       }
     } else {
       try {
-        const cachedAfterLock = await this.cachePort.getJson<PaginatedResult<TicketEntity>>(cacheKey);
-        if (cachedAfterLock) {
-          return cachedAfterLock;
+        const afterLock = tryDecodeTicketListCache(
+          await this.cachePort.getJson<unknown>(cacheKey),
+        );
+        if (afterLock) {
+          return afterLock;
         }
 
-        const result = await this.ticketRepository.findAll({
-          page,
-          limit,
-          cursor,
-        });
+        const result = await this.ticketRepository.findAll(criteria);
 
-        await this.cachePort.setJson(cacheKey, result, this.CACHE_TTL_SECONDS);
+        await this.cachePort.setJson(
+          cacheKey,
+          encodeTicketListPage(result),
+          this.CACHE_TTL_SECONDS,
+        );
         return result;
       } finally {
         await this.cachePort.releaseLock(lockKey);
       }
     }
 
-    const result = await this.ticketRepository.findAll({
-      page,
-      limit,
-      cursor,
-    });
+    const result = await this.ticketRepository.findAll(criteria);
 
-    await this.cachePort.setJson(cacheKey, result, this.CACHE_TTL_SECONDS);
+    await this.cachePort.setJson(
+      cacheKey,
+      encodeTicketListPage(result),
+      this.CACHE_TTL_SECONDS,
+    );
 
     return result;
   }
 
-  private async waitForCache<T>(cacheKey: string): Promise<T | null> {
+  private toCriteria(input: TFindAllTicket): TicketListCriteria {
+    return {
+      page: input.page,
+      limit: input.limit,
+      cursor: input.cursor,
+      createdFrom: input.createdFrom,
+      createdTo: input.createdTo,
+      sortBy: input.sortBy,
+      sortOrder: input.sortOrder,
+      status: input.status,
+    };
+  }
+
+  private async waitForCacheRaw(cacheKey: string): Promise<unknown | null> {
     const deadline = Date.now() + CACHE_LOCK_POLICY.waitMaxMs;
 
     while (Date.now() < deadline) {
       await this.sleep(CACHE_LOCK_POLICY.waitStepMs);
 
-      const cached = await this.cachePort.getJson<T>(cacheKey);
+      const cached = await this.cachePort.getJson<unknown>(cacheKey);
       if (cached) {
         return cached;
       }

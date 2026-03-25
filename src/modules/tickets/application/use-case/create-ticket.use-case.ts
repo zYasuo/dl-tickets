@@ -4,6 +4,7 @@ import { TicketRepositoryPort } from '../../domain/ports/repository/ticket.repos
 import { TicketEntity, TicketStatus } from '../../domain/entities/ticket.entity';
 import { Description } from '../../domain/vo/description.vo';
 import { CachePort } from 'src/common/ports/cache/cache.ports';
+import { encodeTicketRow } from '../mappers/ticket-cache.codec';
 import { ticketCacheKey } from '../cache/ticket-cache.key';
 import { NotificationRepositoryPort } from 'src/modules/notifications/domain/ports/repository/notification.repository.port';
 import { NotificationQueuePort } from 'src/modules/notifications/domain/ports/queue/notification-queue.port';
@@ -46,7 +47,7 @@ export class CreateTicketUseCase {
 
     await this.cachePort.setJson(
       ticketCacheKey(createdTicket.id),
-      createdTicket,
+      encodeTicketRow(createdTicket),
       this.CACHE_TTL_SECONDS,
     );
 
