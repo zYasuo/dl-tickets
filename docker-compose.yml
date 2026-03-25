@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  # nest-api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: nest-api
+  #   restart: always
+  #   ports:
+  #     - '3000:3000'
+  #   depends_on:
+  #     - nest-postgres
+  #     - nest-redis
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     REDIS_HOST: nest-redis
+
+  nest-redis:
+    image: redis:7-alpine
+    container_name: nest-redis
+    restart: always
+    ports:
+      - '6379:6379'
+    command: >
+      redis-server --requirepass ${REDIS_PASSWORD}
+
+  nest-postgres:
+    image: postgres:14
+    container_name: nest-postgres
+    restart: always
+    ports:
+      - '5432:5432'
+    env_file:
+      - .env
+    volumes:
+      - nest-postgres:/var/lib/postgresql/data
+
+volumes:
+  nest-postgres:
+    name: nest-postgres-db

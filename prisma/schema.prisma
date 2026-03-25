@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid()) @map("id")
+  name      String   @map("name") @db.VarChar(255)
+  email     String   @unique @map("email") @db.VarChar(255)
+  password  String   @map("password") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tickets       Tickets[]       @relation("UserTickets")
+  notifications Notification[]
+}
+
+model Tickets {
+  id          String       @id @default(uuid()) @map("id")
+  title       String       @map("title") @db.VarChar(255)
+  description String       @map("description") @db.VarChar(255)
+  status      TicketStatus @default(OPEN) @map("status")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  userId      String       @map("user_id")
+  user          User           @relation("UserTickets", fields: [userId], references: [id])
+  notifications Notification[]
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+}
+
+model Notification {
+  id        String             @id @default(uuid()) @map("id")
+  channel   NotificationChannel @map("channel")
+  recipient String             @map("recipient") @db.VarChar(255)
+  subject   String             @map("subject") @db.VarChar(255)
+  body      String             @map("body") @db.Text
+  status    NotificationStatus @default(PENDING) @map("status")
+  ticketId  String             @map("ticket_id")
+  userId    String             @map("user_id")
+  sentAt    DateTime?          @map("sent_at")
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  ticket Tickets @relation(fields: [ticketId], references: [id])
+  user   User    @relation(fields: [userId], references: [id])
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum NotificationChannel {
+  EMAIL
+}

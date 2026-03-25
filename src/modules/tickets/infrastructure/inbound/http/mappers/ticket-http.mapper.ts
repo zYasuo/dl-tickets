@@ -1,0 +1,25 @@
+import { TicketEntity, TicketStatus } from 'src/modules/tickets/domain/entities/ticket.entity';
+
+export type TTicketPublicHttp = {
+  id: string;
+  title: string;
+  description: string;
+  status: TicketStatus;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+};
+
+export function toTicketPublicHttp(ticket: TicketEntity): TTicketPublicHttp {
+  const { id, title, description, status, createdAt, updatedAt, userId } = ticket;
+
+  return {
+    id: id,
+    title: title,
+    description: description.value,
+    status: status,
+    createdAt: createdAt.toISOString(),
+    updatedAt: updatedAt.toISOString(),
+    userId: userId,
+  };
+}
