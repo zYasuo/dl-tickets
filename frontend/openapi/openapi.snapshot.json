@@ -1,0 +1,290 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "DL Tickets API",
+    "version": "0.0.1",
+    "description": "Snapshot alinhado ao NestJS; regenerar com o backend em http://localhost:3000/docs-json quando o contrato mudar."
+  },
+  "paths": {
+    "/tickets": {
+      "get": {
+        "tags": ["Tickets"],
+        "summary": "List tickets (pagination)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1, "default": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 10 }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "createdFrom",
+            "in": "query",
+            "schema": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+            "description": "Filter by ticket creation date (inclusive), YYYY-MM-DD (UTC day start)"
+          },
+          {
+            "name": "createdTo",
+            "in": "query",
+            "schema": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+            "description": "Filter by ticket creation date (inclusive), YYYY-MM-DD (UTC day end)"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["title", "status", "updatedAt", "createdAt"],
+              "default": "createdAt"
+            },
+            "description": "Sort field"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["asc", "desc"], "default": "desc" },
+            "description": "Sort direction"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["OPEN", "IN_PROGRESS", "DONE"]
+            },
+            "description": "Filter by status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list (envelope)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TicketListSuccessEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Create ticket",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateTicketBody" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TicketSingleSuccessEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tickets/{id}": {
+      "patch": {
+        "tags": ["Tickets"],
+        "summary": "Update ticket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateTicketBody" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TicketSingleSuccessEnvelope" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+              }
+            }
+          },
+          "409": {
+            "description": "Concurrency conflict",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TicketStatus": {
+        "type": "string",
+        "enum": ["OPEN", "IN_PROGRESS", "DONE"]
+      },
+      "TicketPublic": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "userId"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "status": { "$ref": "#/components/schemas/TicketStatus" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "userId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "required": [
+          "total",
+          "page",
+          "limit",
+          "totalPages",
+          "hasNextPage",
+          "hasPreviousPage",
+          "nextCursor"
+        ],
+        "properties": {
+          "total": { "type": "integer" },
+          "page": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "totalPages": { "type": "integer" },
+          "hasNextPage": { "type": "boolean" },
+          "hasPreviousPage": { "type": "boolean" },
+          "nextCursor": { "type": "string", "nullable": true }
+        }
+      },
+      "TicketListInner": {
+        "type": "object",
+        "required": ["data", "meta"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TicketPublic" }
+          },
+          "meta": { "$ref": "#/components/schemas/PaginationMeta" }
+        }
+      },
+      "TicketListSuccessEnvelope": {
+        "type": "object",
+        "required": ["success", "timestamp", "data"],
+        "properties": {
+          "success": { "type": "boolean", "enum": [true] },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "data": { "$ref": "#/components/schemas/TicketListInner" }
+        }
+      },
+      "TicketSingleSuccessEnvelope": {
+        "type": "object",
+        "required": ["success", "timestamp", "data"],
+        "properties": {
+          "success": { "type": "boolean", "enum": [true] },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "data": { "$ref": "#/components/schemas/TicketPublic" }
+        }
+      },
+      "CreateTicketBody": {
+        "type": "object",
+        "required": ["userId", "title", "description", "status"],
+        "properties": {
+          "userId": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "maxLength": 255 },
+          "status": { "$ref": "#/components/schemas/TicketStatus" }
+        }
+      },
+      "UpdateTicketBody": {
+        "type": "object",
+        "required": ["title", "description", "status", "updatedAt"],
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string", "maxLength": 255 },
+          "status": { "$ref": "#/components/schemas/TicketStatus" },
+          "updatedAt": { "type": "string", "minLength": 1 }
+        }
+      },
+      "StandardErrorEnvelope": {
+        "type": "object",
+        "required": ["success", "timestamp", "statusCode", "error", "message"],
+        "properties": {
+          "success": { "type": "boolean", "enum": [false] },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "statusCode": { "type": "integer" },
+          "error": { "type": "string" },
+          "message": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ]
+          },
+          "details": {}
+        }
+      }
+    }
+  }
+}

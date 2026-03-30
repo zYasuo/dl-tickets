@@ -1,0 +1,27 @@
+
+# SO
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs (qualquer pasta)
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+/.env
+/.env.local
+/.env.*.local
+/.env.development
+/.env.production
+/.env.test
+
+# IDE na raiz
+/.idea/
+
+*.pem
+*.key
+*.p12
