@@ -1,20 +1,24 @@
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/shared/components/ui/button-variants";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useAuth } from "@/features/auth/components/auth-provider";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+
 
 export default function Home() {
+  const { user, isReady } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isReady) return;
+    router.replace(user ? "/tickets" : "/login");
+  }, [isReady, user, router]);
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 p-8">
-      <div className="max-w-md text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">DL Tickets</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Frontend Next.js com TanStack Query, formulários Zod/RHF e proxy para a API
-          Nest em <code className="rounded bg-muted px-1 py-0.5 text-xs">/api/v1</code>.
-        </p>
-      </div>
-      <Link href="/tickets" className={cn(buttonVariants({ size: "lg" }))}>
-        Ver tickets
-      </Link>
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-10 w-40" />
     </div>
   );
 }

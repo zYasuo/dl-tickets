@@ -16,9 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import type { components } from "@/lib/api/v1";
+import type { TicketPublic } from "@/lib/api/tickets-api";
 
-type TicketStatus = components["schemas"]["TicketStatus"];
+type TicketStatus = TicketPublic["status"];
 
 const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
   { value: "OPEN", label: ticketStatusLabel("OPEN") },

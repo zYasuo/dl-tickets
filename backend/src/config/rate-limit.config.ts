@@ -3,6 +3,7 @@ import { registerAs } from '@nestjs/config';
 export type TRateLimitEndpointKey =
   | 'users-register'
   | 'tickets-list'
+  | 'tickets-get-by-id'
   | 'tickets-create'
   | 'tickets-update'
   | 'auth-login'
@@ -29,6 +30,7 @@ function parseIntEnv(name: string, defaultValue: number): number {
 const defaults: IRateLimitConfig = {
   'users-register': { max: 10, windowSeconds: 3600 },
   'tickets-list': { max: 120, windowSeconds: 60 },
+  'tickets-get-by-id': { max: 120, windowSeconds: 60 },
   'tickets-create': { max: 30, windowSeconds: 60 },
   'tickets-update': { max: 60, windowSeconds: 60 },
   'auth-login': { max: 5, windowSeconds: 900 },
@@ -53,6 +55,13 @@ export const rateLimitConfig = registerAs(
       windowSeconds: parseIntEnv(
         'RATE_LIMIT_TICKETS_LIST_WINDOW_SECONDS',
         defaults['tickets-list'].windowSeconds,
+      ),
+    },
+    'tickets-get-by-id': {
+      max: parseIntEnv('RATE_LIMIT_TICKETS_GET_BY_ID_MAX', defaults['tickets-get-by-id'].max),
+      windowSeconds: parseIntEnv(
+        'RATE_LIMIT_TICKETS_GET_BY_ID_WINDOW_SECONDS',
+        defaults['tickets-get-by-id'].windowSeconds,
       ),
     },
     'tickets-create': {

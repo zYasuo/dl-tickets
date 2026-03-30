@@ -1,75 +1,405 @@
 {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "DL Tickets API",
-    "version": "0.0.1",
-    "description": "Snapshot alinhado ao NestJS; regenerar com o backend em http://localhost:3000/docs-json quando o contrato mudar."
-  },
+  "openapi": "3.0.0",
   "paths": {
-    "/tickets": {
+    "/api/v1/users": {
+      "post": {
+        "operationId": "UserController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created. Actual response wraps payload in `{ success, timestamp, data }` (see schema).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCreatedEnvelopeOpenApiDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Zod validation / domain rules",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Registration failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Register user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sets httpOnly refresh cookie on path /api/v1/auth. Response wraps `{ success, timestamp, data: { accessToken } }`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginEnvelopeOpenApiDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sign in (access token + httpOnly refresh cookie)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "New access token and rotated refresh cookie.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginEnvelopeOpenApiDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired refresh",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Rotate refresh token (cookie)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Cookie cleared.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageEnvelopeOpenApiDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revoke refresh session (cookie)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset/request": {
+      "post": {
+        "operationId": "AuthController_requestPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPasswordResetBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Same message whether or not the email exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageEnvelopeOpenApiDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Request password reset email",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset/confirm": {
+      "post": {
+        "operationId": "AuthController_confirmPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated; all refresh sessions revoked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageEnvelopeOpenApiDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Confirm password reset with token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/tickets": {
       "get": {
-        "tags": ["Tickets"],
-        "summary": "List tickets (pagination)",
+        "operationId": "TicketController_findAll",
         "parameters": [
           {
             "name": "page",
+            "required": false,
             "in": "query",
-            "schema": { "type": "integer", "minimum": 1, "default": 1 }
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
           },
           {
             "name": "limit",
+            "required": false,
             "in": "query",
-            "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 10 }
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
           },
           {
             "name": "cursor",
+            "required": false,
             "in": "query",
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           },
           {
             "name": "createdFrom",
+            "required": false,
             "in": "query",
-            "schema": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
-            "description": "Filter by ticket creation date (inclusive), YYYY-MM-DD (UTC day start)"
+            "schema": {
+              "example": "2025-01-01",
+              "type": "string"
+            }
           },
           {
             "name": "createdTo",
+            "required": false,
             "in": "query",
-            "schema": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
-            "description": "Filter by ticket creation date (inclusive), YYYY-MM-DD (UTC day end)"
+            "schema": {
+              "example": "2025-12-31",
+              "type": "string"
+            }
           },
           {
             "name": "sortBy",
+            "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["title", "status", "updatedAt", "createdAt"],
-              "default": "createdAt"
-            },
-            "description": "Sort field"
+              "enum": [
+                "title",
+                "status",
+                "updatedAt",
+                "createdAt"
+              ],
+              "type": "string"
+            }
           },
           {
             "name": "sortOrder",
+            "required": false,
             "in": "query",
-            "schema": { "type": "string", "enum": ["asc", "desc"], "default": "desc" },
-            "description": "Sort direction"
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
           },
           {
             "name": "status",
+            "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["OPEN", "IN_PROGRESS", "DONE"]
-            },
-            "description": "Filter by status"
+              "enum": [
+                "OPEN",
+                "IN_PROGRESS",
+                "DONE"
+              ],
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Paginated list (envelope)",
+            "description": "Paginated list. Actual response wraps payload in `{ success, timestamp, data: { data, meta } }`.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/TicketListSuccessEnvelope" }
+                "schema": {
+                  "$ref": "#/components/schemas/TicketListEnvelopeOpenApiDto"
+                }
               }
             }
           },
@@ -77,129 +407,625 @@
             "description": "Invalid query",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List tickets (pagination)",
+        "tags": [
+          "Tickets"
+        ]
       },
       "post": {
-        "tags": ["Tickets"],
-        "summary": "Create ticket",
+        "operationId": "TicketController_create",
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateTicketBody" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketBodyDto"
+              }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Created",
+            "description": "Ticket created. Actual response wraps payload in `{ success, timestamp, data }`.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/TicketSingleSuccessEnvelope" }
+                "schema": {
+                  "$ref": "#/components/schemas/TicketSingleEnvelopeOpenApiDto"
+                }
               }
             }
           },
           "400": {
-            "description": "Validation",
+            "description": "Zod validation",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create ticket",
+        "tags": [
+          "Tickets"
+        ]
       }
     },
-    "/tickets/{id}": {
-      "patch": {
-        "tags": ["Tickets"],
-        "summary": "Update ticket",
+    "/api/v1/tickets/{id}": {
+      "get": {
+        "operationId": "TicketController_findById",
         "parameters": [
           {
             "name": "id",
-            "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket found. Actual response wraps payload in `{ success, timestamp, data }`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketSingleEnvelopeOpenApiDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ticket not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get ticket by id",
+        "tags": [
+          "Tickets"
+        ]
+      },
+      "patch": {
+        "operationId": "TicketController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/UpdateTicketBody" }
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTicketBodyDto"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Updated",
+            "description": "Ticket updated. Actual response wraps payload in `{ success, timestamp, data }`.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/TicketSingleSuccessEnvelope" }
+                "schema": {
+                  "$ref": "#/components/schemas/TicketSingleEnvelopeOpenApiDto"
+                }
               }
             }
           },
           "400": {
-            "description": "Validation",
+            "description": "Zod validation",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
               }
             }
           },
           "404": {
-            "description": "Not found",
+            "description": "Ticket not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
               }
             }
           },
           "409": {
-            "description": "Concurrency conflict",
+            "description": "Concurrency: stale `updatedAt`",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/StandardErrorEnvelope" }
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponseDto"
+                }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update ticket (optimistic locking)",
+        "tags": [
+          "Tickets"
+        ]
       }
     }
   },
+  "info": {
+    "title": "DL Tickets API",
+    "description": "Tickets API with JWT access tokens and httpOnly refresh cookies. Responses use `{ success, timestamp, data }` (or error envelope). **Tickets** require `Authorization: Bearer <accessToken>`. Register at `POST /users`, then `POST /auth/login`.",
+    "version": "0.0.1",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Sign-in, refresh (cookie), logout, password reset"
+    },
+    {
+      "name": "Users",
+      "description": "Registration (public)"
+    },
+    {
+      "name": "Tickets",
+      "description": "List / create / update — requires Bearer token"
+    }
+  ],
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Versioned API"
+    }
+  ],
   "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "description": "JWT from `POST /auth/login` (`data.accessToken`). Payload: `sub` (user uuid), `email`. Refresh: httpOnly cookie + `POST /auth/refresh`."
+      }
+    },
     "schemas": {
-      "TicketStatus": {
-        "type": "string",
-        "enum": ["OPEN", "IN_PROGRESS", "DONE"]
-      },
-      "TicketPublic": {
+      "CreateUserBodyDto": {
         "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password"
+        ]
+      },
+      "UserPublicHttpOpenApiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UserCreatedEnvelopeOpenApiDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UserPublicHttpOpenApiDto"
+          }
+        },
+        "required": [
+          "success",
+          "timestamp",
+          "data"
+        ]
+      },
+      "StandardErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2025-03-25T12:00:00.000Z"
+          },
+          "statusCode": {
+            "type": "number",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "example": "Bad Request"
+          },
+          "message": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "details": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "success",
+          "timestamp",
+          "statusCode",
+          "error",
+          "message"
+        ]
+      },
+      "LoginBodyDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResponseOpenApiDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessToken"
+        ]
+      },
+      "LoginEnvelopeOpenApiDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LoginResponseOpenApiDto"
+          }
+        },
+        "required": [
+          "success",
+          "timestamp",
+          "data"
+        ]
+      },
+      "MessageResponseOpenApiDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "MessageEnvelopeOpenApiDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MessageResponseOpenApiDto"
+          }
+        },
+        "required": [
+          "success",
+          "timestamp",
+          "data"
+        ]
+      },
+      "RequestPasswordResetBodyDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordBodyDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ]
+      },
+      "TicketPublicHttpOpenApiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "IN_PROGRESS",
+              "DONE"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
         "required": [
           "id",
           "title",
           "description",
           "status",
           "createdAt",
-          "updatedAt",
-          "userId"
-        ],
-        "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "title": { "type": "string" },
-          "description": { "type": "string" },
-          "status": { "$ref": "#/components/schemas/TicketStatus" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "userId": { "type": "string", "format": "uuid" }
-        }
+          "updatedAt"
+        ]
       },
-      "PaginationMeta": {
+      "PaginationMetaOpenApiDto": {
         "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "totalPages": {
+            "type": "number"
+          },
+          "hasNextPage": {
+            "type": "boolean"
+          },
+          "hasPreviousPage": {
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
         "required": [
           "total",
           "page",
@@ -208,82 +1034,115 @@
           "hasNextPage",
           "hasPreviousPage",
           "nextCursor"
-        ],
-        "properties": {
-          "total": { "type": "integer" },
-          "page": { "type": "integer" },
-          "limit": { "type": "integer" },
-          "totalPages": { "type": "integer" },
-          "hasNextPage": { "type": "boolean" },
-          "hasPreviousPage": { "type": "boolean" },
-          "nextCursor": { "type": "string", "nullable": true }
-        }
+        ]
       },
-      "TicketListInner": {
+      "TicketListInnerOpenApiDto": {
         "type": "object",
-        "required": ["data", "meta"],
         "properties": {
           "data": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/TicketPublic" }
+            "items": {
+              "$ref": "#/components/schemas/TicketPublicHttpOpenApiDto"
+            }
           },
-          "meta": { "$ref": "#/components/schemas/PaginationMeta" }
-        }
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMetaOpenApiDto"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
       },
-      "TicketListSuccessEnvelope": {
+      "TicketListEnvelopeOpenApiDto": {
         "type": "object",
-        "required": ["success", "timestamp", "data"],
         "properties": {
-          "success": { "type": "boolean", "enum": [true] },
-          "timestamp": { "type": "string", "format": "date-time" },
-          "data": { "$ref": "#/components/schemas/TicketListInner" }
-        }
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TicketListInnerOpenApiDto"
+          }
+        },
+        "required": [
+          "success",
+          "timestamp",
+          "data"
+        ]
       },
-      "TicketSingleSuccessEnvelope": {
+      "CreateTicketBodyDto": {
         "type": "object",
-        "required": ["success", "timestamp", "data"],
         "properties": {
-          "success": { "type": "boolean", "enum": [true] },
-          "timestamp": { "type": "string", "format": "date-time" },
-          "data": { "$ref": "#/components/schemas/TicketPublic" }
-        }
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "title",
+          "description"
+        ]
       },
-      "CreateTicketBody": {
+      "TicketSingleEnvelopeOpenApiDto": {
         "type": "object",
-        "required": ["userId", "title", "description", "status"],
         "properties": {
-          "userId": { "type": "string", "format": "uuid" },
-          "title": { "type": "string" },
-          "description": { "type": "string", "maxLength": 255 },
-          "status": { "$ref": "#/components/schemas/TicketStatus" }
-        }
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TicketPublicHttpOpenApiDto"
+          }
+        },
+        "required": [
+          "success",
+          "timestamp",
+          "data"
+        ]
       },
-      "UpdateTicketBody": {
+      "UpdateTicketBodyDto": {
         "type": "object",
-        "required": ["title", "description", "status", "updatedAt"],
         "properties": {
-          "title": { "type": "string" },
-          "description": { "type": "string", "maxLength": 255 },
-          "status": { "$ref": "#/components/schemas/TicketStatus" },
-          "updatedAt": { "type": "string", "minLength": 1 }
-        }
-      },
-      "StandardErrorEnvelope": {
-        "type": "object",
-        "required": ["success", "timestamp", "statusCode", "error", "message"],
-        "properties": {
-          "success": { "type": "boolean", "enum": [false] },
-          "timestamp": { "type": "string", "format": "date-time" },
-          "statusCode": { "type": "integer" },
-          "error": { "type": "string" },
-          "message": {
-            "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "string" } }
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "IN_PROGRESS",
+              "DONE"
             ]
           },
-          "details": {}
-        }
+          "updatedAt": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "status",
+          "updatedAt"
+        ]
       }
     }
   }

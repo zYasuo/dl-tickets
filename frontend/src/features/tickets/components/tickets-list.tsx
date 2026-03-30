@@ -191,6 +191,7 @@ export function TicketsList() {
           onEditOpenChange={(open) => {
             if (!open) setEditTicket(null);
           }}
+          onEditTicketSaved={setEditTicket}
           createOpen={createOpen}
           onCreateOpenChange={setCreateOpen}
         />
@@ -306,6 +307,7 @@ export function TicketsList() {
         onEditOpenChange={(open) => {
           if (!open) setEditTicket(null);
         }}
+        onEditTicketSaved={setEditTicket}
         createOpen={createOpen}
         onCreateOpenChange={setCreateOpen}
       />
@@ -316,11 +318,13 @@ export function TicketsList() {
 function TicketsListDialogs({
   editTicket,
   onEditOpenChange,
+  onEditTicketSaved,
   createOpen,
   onCreateOpenChange,
 }: {
   editTicket: TicketPublic | null;
   onEditOpenChange: (open: boolean) => void;
+  onEditTicketSaved: (ticket: TicketPublic) => void;
   createOpen: boolean;
   onCreateOpenChange: (open: boolean) => void;
 }) {
@@ -350,6 +354,7 @@ function TicketsListDialogs({
               ticketId={editTicket.id}
               initialTicket={editTicket}
               layout="plain"
+              onSaved={onEditTicketSaved}
               onSuccess={() => onEditOpenChange(false)}
               onCancel={() => onEditOpenChange(false)}
             />

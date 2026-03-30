@@ -16,6 +16,7 @@ import { TicketController } from '../src/modules/tickets/infrastructure/inbound/
 import { CreateTicketUseCase } from '../src/modules/tickets/application/use-case/create-ticket.use-case';
 import { FindAllTicketsUseCase } from '../src/modules/tickets/application/use-case/find-all-tickets.use-case';
 import { UpdateTicketUseCase } from '../src/modules/tickets/application/use-case/update-ticket.use-case';
+import { FindTicketByIdUseCase } from '../src/modules/tickets/application/use-case/find-ticket-by-id.use-case';
 
 class MemoryRateLimitStore {
   private readonly counts = new Map<string, number>();
@@ -40,6 +41,7 @@ describe('Tickets require auth (e2e-style)', () => {
       providers: [
         { provide: CreateTicketUseCase, useValue: { execute: jest.fn() } },
         { provide: FindAllTicketsUseCase, useValue: { execute: jest.fn() } },
+        { provide: FindTicketByIdUseCase, useValue: { execute: jest.fn() } },
         { provide: UpdateTicketUseCase, useValue: { execute: jest.fn() } },
         { provide: APP_GUARD, useClass: RateLimitGuard },
         { provide: APP_GUARD, useClass: JwtAuthGuard },

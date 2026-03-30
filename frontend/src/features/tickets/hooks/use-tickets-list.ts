@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchTicketsPage } from "@/lib/api/tickets-api";
+import { AFetchTicketsPage } from "@/features/tickets/actions";
 import {
   ticketQueryKeys,
   type TicketListOptions,
@@ -17,7 +17,7 @@ export function useTicketsList(
   return useQuery({
     queryKey: ticketQueryKeys.list(page, limit, options),
     queryFn: () =>
-      fetchTicketsPage({
+      AFetchTicketsPage({
         page,
         limit,
         ...(date

@@ -16,10 +16,10 @@ function messageFromUnknown(error: unknown): string {
       : error.messageBody.join("\n");
   }
   if (error instanceof Error) return error.message;
-  return "Ocorreu um erro inesperado.";
+  return "Something went wrong.";
 }
 
-export function ErrorAlert({ error, title = "Erro", className }: ErrorAlertProps) {
+export function ErrorAlert({ error, title = "Error", className }: ErrorAlertProps) {
   const description = messageFromUnknown(error);
 
   return (

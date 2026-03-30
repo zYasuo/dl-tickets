@@ -12,6 +12,7 @@ import { TicketEntity, TicketStatus } from '../../domain/entities/ticket.entity'
 import { Description } from '../../domain/vo/description.vo';
 import type { CachePort } from 'src/common/ports/cache/cache.ports';
 import { encodeTicketRow } from '../mappers/ticket-cache.codec';
+import { ticketUserListVersionKey } from '../cache/ticket-key-builder.cache';
 import { ticketCacheKey } from '../cache/ticket-cache.key';
 import type { NotificationRepositoryPort } from 'src/modules/notifications/domain/ports/repository/notification.repository.port';
 import type { NotificationQueuePort } from 'src/modules/notifications/domain/ports/queue/notification-queue.port';
@@ -26,7 +27,6 @@ import type { TCreateTicket } from '../dto/create-ticket.dto';
 @Injectable()
 export class CreateTicketUseCase {
   private readonly CACHE_TTL_SECONDS = 60 * 5;
-  private readonly LIST_VERSION_KEY = 'tickets:all:version';
 
   constructor(
     @Inject(TICKET_REPOSITORY) private readonly ticketRepository: TicketRepositoryPort,
@@ -59,7 +59,7 @@ export class CreateTicketUseCase {
 
     const createdTicket = await this.ticketRepository.create(ticket);
 
-    await this.cachePort.incr(this.LIST_VERSION_KEY);
+    await this.cachePort.incr(ticketUserListVersionKey(userUuid));
 
     await this.cachePort.setJson(
       ticketCacheKey(createdTicket.id),

@@ -8,6 +8,7 @@ import { CachePort } from 'src/common/ports/cache/cache.ports';
 import { Description } from '../../domain/vo/description.vo';
 import { TicketEntity, TicketStatus } from '../../domain/entities/ticket.entity';
 import { TicketRepositoryPort } from '../../domain/ports/repository/ticket.repository.port';
+import { ticketUserListVersionKey } from '../cache/ticket-key-builder.cache';
 import { ticketCacheKey } from '../cache/ticket-cache.key';
 import { UpdateTicketUseCase } from './update-ticket.use-case';
 
@@ -67,6 +68,7 @@ describe('UpdateTicketUseCase', () => {
       }),
     ).rejects.toThrow(NotFoundException);
 
+    expect(cachePort.incr).not.toHaveBeenCalled();
     expect(cachePort.del).not.toHaveBeenCalled();
   });
 
@@ -104,6 +106,7 @@ describe('UpdateTicketUseCase', () => {
     });
 
     expect(result.title).toBe('New title');
+    expect(cachePort.incr).toHaveBeenCalledWith(ticketUserListVersionKey(userId));
     expect(cachePort.del).toHaveBeenCalledWith(ticketCacheKey(ticketId));
   });
 
@@ -111,16 +114,12 @@ describe('UpdateTicketUseCase', () => {
     ticketRepository.findById.mockResolvedValue(existing);
 
     await expect(
-      useCase.execute(
-        ticketId,
-        {
-          title: 'T',
-          description: 'D',
-          status: TicketStatus.IN_PROGRESS,
-          updatedAt: updatedAt.toISOString(),
-        },
-        randomUUID(),
-      ),
+      useCase.execute(ticketId, randomUUID(), {
+        title: 'T',
+        description: 'D',
+        status: TicketStatus.IN_PROGRESS,
+        updatedAt: updatedAt.toISOString(),
+      }),
     ).rejects.toThrow(ForbiddenException);
   });
 });

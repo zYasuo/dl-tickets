@@ -22,6 +22,24 @@ export function ApiTickets() {
 }
 
 export class TicketDoc {
+  static FindById() {
+    return applyDecorators(
+      Get(':id'),
+      ApiOperation({ summary: 'Get ticket by id' }),
+      ApiParam({ name: 'id', format: 'uuid' }),
+      ApiResponse({
+        status: 200,
+        description:
+          'Ticket found. Actual response wraps payload in `{ success, timestamp, data }`.',
+        type: TicketSingleEnvelopeOpenApiDto,
+      }),
+      standardError(401, 'Unauthorized'),
+      standardError(403, 'Forbidden'),
+      standardError(404, 'Ticket not found'),
+      standardError(429, 'Rate limit'),
+    );
+  }
+
   static List() {
     return applyDecorators(
       Get(),

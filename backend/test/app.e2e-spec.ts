@@ -22,6 +22,7 @@ import {
 import { CreateTicketUseCase } from '../src/modules/tickets/application/use-case/create-ticket.use-case';
 import { FindAllTicketsUseCase } from '../src/modules/tickets/application/use-case/find-all-tickets.use-case';
 import { UpdateTicketUseCase } from '../src/modules/tickets/application/use-case/update-ticket.use-case';
+import { FindTicketByIdUseCase } from '../src/modules/tickets/application/use-case/find-ticket-by-id.use-case';
 import { TicketCacheKeyBuilder } from '../src/modules/tickets/application/cache/ticket-key-builder.cache';
 import type { TicketRepositoryPort } from '../src/modules/tickets/domain/ports/repository/ticket.repository.port';
 import { TicketController } from '../src/modules/tickets/infrastructure/inbound/http/controllers/ticket.controller';
@@ -127,6 +128,7 @@ describe('Tickets HTTP (e2e-style)', () => {
         FindAllTicketsUseCase,
         CreateTicketUseCase,
         UpdateTicketUseCase,
+        FindTicketByIdUseCase,
         { provide: TICKET_REPOSITORY, useValue: ticketRepository },
         { provide: CACHE_PORT, useValue: createMemoryCachePort() },
         {

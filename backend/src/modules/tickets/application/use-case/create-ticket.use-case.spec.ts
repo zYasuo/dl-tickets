@@ -8,6 +8,7 @@ import { UserEntity } from 'src/modules/users/domain/entities/user.entity';
 import { TicketEntity } from '../../domain/entities/ticket.entity';
 import type { TicketRepositoryPort } from '../../domain/ports/repository/ticket.repository.port';
 import { encodeTicketRow } from '../mappers/ticket-cache.codec';
+import { ticketUserListVersionKey } from '../cache/ticket-key-builder.cache';
 import { ticketCacheKey } from '../cache/ticket-cache.key';
 import { CreateTicketUseCase } from './create-ticket.use-case';
 
@@ -92,7 +93,7 @@ describe('CreateTicketUseCase', () => {
     );
 
     expect(result.id).toBeDefined();
-    expect(cachePort.incr).toHaveBeenCalledWith('tickets:all:version');
+    expect(cachePort.incr).toHaveBeenCalledWith(ticketUserListVersionKey(userId));
     expect(cachePort.setJson).toHaveBeenCalledWith(
       ticketCacheKey(result.id),
       encodeTicketRow(result),

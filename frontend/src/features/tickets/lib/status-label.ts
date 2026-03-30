@@ -1,6 +1,6 @@
-import type { components } from "@/lib/api/v1";
+import type { TicketPublic } from "@/lib/api/tickets-api";
 
-type Status = components["schemas"]["TicketStatus"];
+type Status = TicketPublic["status"];
 
 const labels: Record<Status, string> = {
   OPEN: "Aberto",

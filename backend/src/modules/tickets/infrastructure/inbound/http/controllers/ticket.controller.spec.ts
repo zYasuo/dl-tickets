@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { CreateTicketUseCase } from 'src/modules/tickets/application/use-case/create-ticket.use-case';
 import { FindAllTicketsUseCase } from 'src/modules/tickets/application/use-case/find-all-tickets.use-case';
 import { UpdateTicketUseCase } from 'src/modules/tickets/application/use-case/update-ticket.use-case';
+import { FindTicketByIdUseCase } from 'src/modules/tickets/application/use-case/find-ticket-by-id.use-case';
 import { Description } from 'src/modules/tickets/domain/vo/description.vo';
 import { TicketEntity, TicketStatus } from 'src/modules/tickets/domain/entities/ticket.entity';
 import { TicketController } from './ticket.controller';
@@ -15,6 +16,7 @@ describe('TicketController (integration)', () => {
   let createTicket: jest.Mocked<Pick<CreateTicketUseCase, 'execute'>>;
   let findAllTickets: jest.Mocked<Pick<FindAllTicketsUseCase, 'execute'>>;
   let updateTicket: jest.Mocked<Pick<UpdateTicketUseCase, 'execute'>>;
+  let findTicketById: jest.Mocked<Pick<FindTicketByIdUseCase, 'execute'>>;
 
   const now = new Date('2025-05-01T15:00:00.000Z');
   const userId = randomUUID();
@@ -23,12 +25,14 @@ describe('TicketController (integration)', () => {
     createTicket = { execute: jest.fn() };
     findAllTickets = { execute: jest.fn() };
     updateTicket = { execute: jest.fn() };
+    findTicketById = { execute: jest.fn() };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [TicketController],
       providers: [
         { provide: CreateTicketUseCase, useValue: createTicket },
         { provide: FindAllTicketsUseCase, useValue: findAllTickets },
+        { provide: FindTicketByIdUseCase, useValue: findTicketById },
         { provide: UpdateTicketUseCase, useValue: updateTicket },
         {
           provide: APP_GUARD,
@@ -132,6 +136,35 @@ describe('TicketController (integration)', () => {
         updatedAt: now.toISOString(),
       })
       .expect(400);
+  });
+
+  it('returns 400 when GET /tickets/:id id is not a UUID v4', () => {
+    return request(app.getHttpServer()).get('/api/v1/tickets/not-a-uuid').expect(400);
+  });
+
+  it('returns 200 on GET /tickets/:id with valid uuid v4', async () => {
+    const id = randomUUID();
+    findTicketById.execute.mockResolvedValue(
+      TicketEntity.create({
+        id,
+        title: 'One',
+        description: Description.create('Body'),
+        status: TicketStatus.OPEN,
+        createdAt: now,
+        updatedAt: now,
+        userId,
+      }),
+    );
+
+    const res = await request(app.getHttpServer()).get(`/api/v1/tickets/${id}`).expect(200);
+
+    expect(findTicketById.execute).toHaveBeenCalledWith(id, userId);
+    expect(res.body).toMatchObject({
+      id,
+      title: 'One',
+      description: 'Body',
+      status: TicketStatus.OPEN,
+    });
   });
 
   it('returns 200 on PATCH with valid uuid v4', async () => {

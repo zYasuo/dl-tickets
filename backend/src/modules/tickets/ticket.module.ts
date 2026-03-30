@@ -3,6 +3,7 @@ import { TicketController } from 'src/modules/tickets/infrastructure/inbound/htt
 import { CreateTicketUseCase } from 'src/modules/tickets/application/use-case/create-ticket.use-case';
 import { FindAllTicketsUseCase } from 'src/modules/tickets/application/use-case/find-all-tickets.use-case';
 import { UpdateTicketUseCase } from 'src/modules/tickets/application/use-case/update-ticket.use-case';
+import { FindTicketByIdUseCase } from 'src/modules/tickets/application/use-case/find-ticket-by-id.use-case';
 import { TicketRepository } from 'src/modules/tickets/infrastructure/outbound/persistence/repositories/ticket.repository';
 import { CacheModule } from '../cache/cache.module';
 import { NotificationModule } from '../notifications/notification.module';
@@ -17,6 +18,7 @@ import { TICKET_REPOSITORY } from 'src/di/tokens';
     CreateTicketUseCase,
     FindAllTicketsUseCase,
     UpdateTicketUseCase,
+    FindTicketByIdUseCase,
     TicketCacheKeyBuilder,
     {
       provide: TICKET_REPOSITORY,

@@ -1,6 +1,6 @@
 import type { components } from "@/lib/api/v1";
 
-export type StandardErrorBody = components["schemas"]["StandardErrorEnvelope"];
+export type StandardErrorBody = components["schemas"]["StandardErrorResponseDto"];
 
 function formatMessage(message: string | string[]): string {
   return Array.isArray(message) ? message.join("\n") : message;
@@ -24,8 +24,8 @@ export class ApiError extends Error {
   static isStandardError(json: unknown): json is StandardErrorBody {
     if (!json || typeof json !== "object") return false;
     const o = json as Record<string, unknown>;
+    if (o.success !== false) return false;
     return (
-      o.success === false &&
       typeof o.statusCode === "number" &&
       typeof o.error === "string" &&
       (typeof o.message === "string" || Array.isArray(o.message))
@@ -41,7 +41,7 @@ export class ApiError extends Error {
       timestamp: new Date().toISOString(),
       statusCode: fallbackStatus,
       error: "Error",
-      message: "Pedido inválido ou servidor indisponível.",
+      message: "Invalid request or server unavailable.",
     });
   }
 }

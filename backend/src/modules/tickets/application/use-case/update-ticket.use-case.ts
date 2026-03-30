@@ -10,6 +10,7 @@ import type { TicketRepositoryPort } from '../../domain/ports/repository/ticket.
 import { TicketEntity } from '../../domain/entities/ticket.entity';
 import { Description } from '../../domain/vo/description.vo';
 import type { CachePort } from 'src/common/ports/cache/cache.ports';
+import { ticketUserListVersionKey } from '../cache/ticket-key-builder.cache';
 import { ticketCacheKey } from '../cache/ticket-cache.key';
 import type { TUpdateTicket } from '../dto/update-ticket.dto';
 
@@ -50,6 +51,7 @@ export class UpdateTicketUseCase {
     });
 
     const updated = await this.ticketRepository.update(toUpdate);
+    await this.cachePort.incr(ticketUserListVersionKey(current.userId));
     await this.cachePort.del(ticketCacheKey(ticketId));
     return updated;
   }

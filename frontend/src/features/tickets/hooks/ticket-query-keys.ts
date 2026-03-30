@@ -1,4 +1,4 @@
-import type { components } from "@/lib/api/v1";
+import type { TicketPublic } from "@/lib/api/tickets-api";
 
 export type TicketListDateFilter = {
   createdFrom: string;
@@ -13,7 +13,7 @@ export type TicketListSortBy =
 
 export type TicketListSortOrder = "asc" | "desc";
 
-export type TicketListStatusFilter = components["schemas"]["TicketStatus"];
+export type TicketListStatusFilter = TicketPublic["status"];
 
 export type TicketListOptions = {
   date?: TicketListDateFilter;

@@ -16,6 +16,7 @@ import { JwtAuthGuard } from './auth/infrastructure/inbound/http/guards/jwt-auth
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      expandVariables: true,
       load: [rateLimitConfig, authConfig],
     }),
     RateLimitModule,

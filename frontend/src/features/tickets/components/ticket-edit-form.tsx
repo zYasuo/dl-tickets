@@ -25,9 +25,9 @@ import { TicketStatusField } from "@/features/tickets/components/ticket-status-f
 
 export type TicketEditFormProps = {
   ticketId: string;
-  /** Quando coincide com `ticketId`, evita `findTicketById` (ex.: aberto a partir da lista). */
   initialTicket?: TicketPublic;
   layout?: "page" | "plain";
+  onSaved?: (ticket: TicketPublic) => void;
   onSuccess?: () => void;
   onCancel?: () => void;
 };
@@ -36,6 +36,7 @@ export function TicketEditForm({
   ticketId,
   initialTicket,
   layout = "page",
+  onSaved,
   onSuccess,
   onCancel,
 }: TicketEditFormProps) {
@@ -118,7 +119,10 @@ export function TicketEditForm({
       className="space-y-4"
       onSubmit={form.handleSubmit((values) => {
         mutation.mutate(values, {
-          onSuccess: handleSuccess,
+          onSuccess: (saved) => {
+            onSaved?.(saved);
+            handleSuccess();
+          },
         });
       })}
     >

@@ -5,6 +5,7 @@ import type { PaginatedResult } from 'src/common/pagination/pagination.types';
 import { CreateTicketUseCase } from 'src/modules/tickets/application/use-case/create-ticket.use-case';
 import { FindAllTicketsUseCase } from 'src/modules/tickets/application/use-case/find-all-tickets.use-case';
 import { UpdateTicketUseCase } from 'src/modules/tickets/application/use-case/update-ticket.use-case';
+import { FindTicketByIdUseCase } from 'src/modules/tickets/application/use-case/find-ticket-by-id.use-case';
 import {
   SCreateTicket,
   type TCreateTicket,
@@ -30,6 +31,7 @@ export class TicketController {
   constructor(
     private readonly createTicketUseCase: CreateTicketUseCase,
     private readonly findAllTicketsUseCase: FindAllTicketsUseCase,
+    private readonly findTicketByIdUseCase: FindTicketByIdUseCase,
     private readonly updateTicketUseCase: UpdateTicketUseCase,
   ) {}
 
@@ -45,6 +47,16 @@ export class TicketController {
       data: result.data.map(toTicketPublicHttp),
       meta: result.meta,
     };
+  }
+
+  @RateLimitEndpoint('tickets-get-by-id')
+  @TicketDoc.FindById()
+  async findById(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @CurrentUser() user: TAuthUser,
+  ): Promise<TTicketPublicHttp> {
+    const ticket = await this.findTicketByIdUseCase.execute(id, user.sub);
+    return toTicketPublicHttp(ticket);
   }
 
   @RateLimitEndpoint('tickets-create')
