@@ -5,36 +5,37 @@ import { APP_GUARD } from '@nestjs/core';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { randomUUID } from 'node:crypto';
-import { RateLimitGuard } from '../src/common/rate-limit/rate-limit.guard';
-import { RateLimitModule } from '../src/common/rate-limit/rate-limit.module';
-import { RateLimitRedisStore } from '../src/common/rate-limit/rate-limit-redis.store';
-import { HttpExceptionFilter } from '../src/common/http/http-exception.filter';
-import { TransformResponseInterceptor } from '../src/common/http/transform-response.interceptor';
-import type { CachePort } from '../src/common/ports/cache/cache.ports';
-import { rateLimitConfig } from '../src/config/rate-limit.config';
-import { CACHE_PORT } from '../src/modules/cache/di.tokens';
+import { RateLimitGuard } from 'src/common/rate-limit/rate-limit.guard';
+import { RateLimitModule } from 'src/common/rate-limit/rate-limit.module';
+import { RateLimitRedisStore } from 'src/common/rate-limit/rate-limit-redis.store';
+import { HttpExceptionFilter } from 'src/common/http/http-exception.filter';
+import { TransformResponseInterceptor } from 'src/common/http/transform-response.interceptor';
+import type { CachePort } from 'src/common/ports/cache/cache.ports';
+import { rateLimitConfig } from 'src/config/rate-limit.config';
+import { CACHE_PORT } from 'src/modules/cache/di.tokens';
 import {
   NOTIFICATION_QUEUE_PORT,
   NOTIFICATION_REPOSITORY,
-} from '../src/modules/notifications/di.tokens';
-import { TICKET_REPOSITORY } from '../src/modules/tickets/di.tokens';
-import { USER_REPOSITORY } from '../src/modules/users/di.tokens';
-import { CreateTicketUseCase } from '../src/modules/tickets/application/use-case/create-ticket.use-case';
-import { FindAllTicketsUseCase } from '../src/modules/tickets/application/use-case/find-all-tickets.use-case';
-import { UpdateTicketUseCase } from '../src/modules/tickets/application/use-case/update-ticket.use-case';
-import { FindTicketByIdUseCase } from '../src/modules/tickets/application/use-case/find-ticket-by-id.use-case';
-import { TicketCacheKeyBuilder } from '../src/modules/tickets/application/cache/ticket-key-builder.cache';
-import type { TicketRepositoryPort } from '../src/modules/tickets/domain/ports/repository/ticket.repository.port';
-import { TicketController } from '../src/modules/tickets/infrastructure/inbound/http/controllers/ticket.controller';
-import { UserEntity } from '../src/modules/users/domain/entities/user.entity';
+} from 'src/modules/notifications/di.tokens';
+import { TICKET_REPOSITORY } from 'src/modules/tickets/di.tokens';
+import { USER_REPOSITORY } from 'src/modules/users/di.tokens';
+import { CreateTicketUseCase } from 'src/modules/tickets/application/use-case/create-ticket.use-case';
+import { FindAllTicketsUseCase } from 'src/modules/tickets/application/use-case/find-all-tickets.use-case';
+import { UpdateTicketUseCase } from 'src/modules/tickets/application/use-case/update-ticket.use-case';
+import { FindTicketByIdUseCase } from 'src/modules/tickets/application/use-case/find-ticket-by-id.use-case';
+import { TicketCacheKeyBuilder } from 'src/modules/tickets/application/cache/ticket-key-builder.cache';
+import type { TicketRepositoryPort } from 'src/modules/tickets/domain/ports/repository/ticket.repository.port';
+import { TicketController } from 'src/modules/tickets/infrastructure/inbound/http/controllers/ticket.controller';
+import { UserEntity } from 'src/modules/users/domain/entities/user.entity';
+import type { Request } from 'express';
 
 class MemoryRateLimitStore {
   private readonly counts = new Map<string, number>();
 
-  async increment(key: string, _windowSeconds: number): Promise<{ count: number }> {
+  increment(key: string, _windowSeconds: number): Promise<{ count: number }> {
     const c = (this.counts.get(key) ?? 0) + 1;
     this.counts.set(key, c);
-    return { count: c };
+    return Promise.resolve({ count: c });
   }
 }
 
@@ -43,45 +44,57 @@ function createMemoryCachePort(): CachePort {
   const locks = new Set<string>();
 
   return {
-    async get(key: string) {
-      return strings.get(key) ?? null;
+    get(key: string) {
+      return Promise.resolve(strings.get(key) ?? null);
     },
-    async set(key: string, value: string, _ttl: number) {
+    set(key: string, value: string, _ttl: number) {
       strings.set(key, value);
+      return Promise.resolve();
     },
-    async del(key: string) {
+    del(key: string) {
       strings.delete(key);
+      return Promise.resolve();
     },
-    async exists(key: string) {
-      return strings.has(key);
+    exists(key: string) {
+      return Promise.resolve(strings.has(key));
     },
-    async getJson<T>(key: string): Promise<T | null> {
+    getJson<T>(key: string): Promise<T | null> {
       const raw = strings.get(key);
-      if (raw === undefined) return null;
+      if (raw === undefined) return Promise.resolve(null);
       try {
-        return JSON.parse(raw) as T;
+        return Promise.resolve(JSON.parse(raw) as T);
       } catch {
-        return null;
+        return Promise.resolve(null);
       }
     },
-    async setJson<T>(key: string, value: T, _ttl: number) {
+    setJson<T>(key: string, value: T, _ttl: number) {
       strings.set(key, JSON.stringify(value));
+      return Promise.resolve();
     },
-    async incr(key: string) {
+    incr(key: string) {
       const n = Number(strings.get(key) ?? 0) + 1;
       strings.set(key, String(n));
-      return n;
+      return Promise.resolve(n);
     },
-    async acquireLock(key: string, _ttl: number) {
-      if (locks.has(key)) return false;
+    acquireLock(key: string, _ttl: number) {
+      if (locks.has(key)) return Promise.resolve(false);
       locks.add(key);
-      return true;
+      return Promise.resolve(true);
     },
-    async releaseLock(key: string) {
+    releaseLock(key: string) {
       locks.delete(key);
+      return Promise.resolve();
     },
   };
 }
+
+type TicketsListEnvelope = {
+  success: boolean;
+  data: {
+    data: unknown[];
+    meta: { page: number; limit: number };
+  };
+};
 
 describe('Tickets HTTP (e2e-style)', () => {
   let app: INestApplication<App>;
@@ -118,7 +131,9 @@ describe('Tickets HTTP (e2e-style)', () => {
           provide: APP_GUARD,
           useValue: {
             canActivate: (context: ExecutionContext) => {
-              const req = context.switchToHttp().getRequest();
+              const req = context
+                .switchToHttp()
+                .getRequest<Request & { user: { sub: string; email: string } }>();
               req.user = { sub: e2eUserUuid, email: 'e2e@example.com' };
               return true;
             },
@@ -149,15 +164,17 @@ describe('Tickets HTTP (e2e-style)', () => {
         {
           provide: USER_REPOSITORY,
           useValue: {
-            findByUuid: jest.fn().mockImplementation(async (uuid: string) =>
-              UserEntity.create({
-                id: uuid,
-                name: 'E2E User',
-                email: 'e2e@example.com',
-                password: 'hashed-password',
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              }),
+            findByUuid: jest.fn((uuid: string) =>
+              Promise.resolve(
+                UserEntity.create({
+                  id: uuid,
+                  name: 'E2E User',
+                  email: 'e2e@example.com',
+                  password: 'hashed-password',
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                }),
+              ),
             ),
           },
         },
@@ -184,10 +201,9 @@ describe('Tickets HTTP (e2e-style)', () => {
       .query({ page: 1, limit: 10 })
       .expect(200);
 
-    expect(res.body.success).toBe(true);
-    expect(res.body.data).toMatchObject({
-      data: [],
-      meta: expect.objectContaining({ page: 1, limit: 10 }),
-    });
+    const body = res.body as TicketsListEnvelope;
+    expect(body.success).toBe(true);
+    expect(body.data.data).toEqual([]);
+    expect(body.data.meta).toMatchObject({ page: 1, limit: 10 });
   });
 });

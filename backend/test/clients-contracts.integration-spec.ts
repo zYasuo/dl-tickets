@@ -1,14 +1,25 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import { PrismaService } from 'nestjs-prisma';
-import { CreateClientUseCase } from '../src/modules/clients/application/use-cases/create-client.use-case';
-import { ClientsModule } from '../src/modules/clients/clients.module';
-import { CreateClientContractUseCase } from '../src/modules/client-contracts/application/use-cases/create-client-contract.use-case';
-import { ClientContractsModule } from '../src/modules/client-contracts/client-contracts.module';
-import { UsersModule } from '../src/modules/users/users.module';
+import { CreateClientUseCase } from 'src/modules/clients/application/use-cases/create-client.use-case';
+import { ClientsModule } from 'src/modules/clients/clients.module';
+import type { CreateClientContractBody } from 'src/modules/client-contracts/application/dto/create-client-contract.dto';
+import { CreateClientContractUseCase } from 'src/modules/client-contracts/application/use-cases/create-client-contract.use-case';
+import { ClientContractsModule } from 'src/modules/client-contracts/client-contracts.module';
+import type { CreateClientBody } from 'src/modules/clients/application/dto/create-client.dto';
+import { UsersModule } from 'src/modules/users/users.module';
+
+const integrationAddress: CreateClientBody['address'] = {
+  street: 'Rua X',
+  number: '1',
+  neighborhood: 'N',
+  zipCode: '01310100',
+  stateUuid: '00000000-0000-4000-8000-000000000010',
+  cityUuid: '00000000-0000-4000-8000-000000000020',
+};
 
 const runIntegration = process.env.RUN_INTEGRATION_TESTS === '1';
 
@@ -51,44 +62,29 @@ const runIntegration = process.env.RUN_INTEGRATION_TESTS === '1';
   });
 
   it('creates client and enforces CPF uniqueness', async () => {
-    const address = {
-      street: 'Rua X',
-      number: '1',
-      neighborhood: 'N',
-      city: 'C',
-      state: 'SP',
-      zipCode: '01310100',
-    };
-
     await createClient.execute({
       name: 'A',
       cpf: '52998224725',
-      address,
+      address: integrationAddress,
+      isForeignNational: false,
     });
 
     await expect(
       createClient.execute({
         name: 'B',
         cpf: '529.982.247-25',
-        address,
+        address: integrationAddress,
+        isForeignNational: false,
       }),
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('creates contract with useClientAddress and rejects missing client', async () => {
-    const address = {
-      street: 'Rua X',
-      number: '1',
-      neighborhood: 'N',
-      city: 'C',
-      state: 'SP',
-      zipCode: '01310100',
-    };
-
     const client = await createClient.execute({
       name: 'Corp',
       cnpj: '11222333000181',
-      address,
+      address: integrationAddress,
+      isForeignNational: false,
     });
 
     const contract = await createContract.execute({
@@ -109,5 +105,43 @@ const runIntegration = process.env.RUN_INTEGRATION_TESTS === '1';
         startDate: '2025-01-01',
       }),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('rejects contract when useClientAddress is false and address is omitted', async () => {
+    const client = await createClient.execute({
+      name: 'NoAddrContract',
+      cnpj: '11222333000181',
+      address: integrationAddress,
+      isForeignNational: false,
+    });
+
+    const body: CreateClientContractBody = {
+      contractNumber: '2026-NO-ADDR',
+      clientId: client.id,
+      useClientAddress: false,
+      startDate: '2025-01-01',
+    };
+
+    await expect(createContract.execute(body)).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('prevents deleting client while a contract references it (FK restrict)', async () => {
+    const client = await createClient.execute({
+      name: 'WithContract',
+      cnpj: '11222333000181',
+      address: integrationAddress,
+      isForeignNational: false,
+    });
+
+    await createContract.execute({
+      contractNumber: '2026-FK',
+      clientId: client.id,
+      useClientAddress: true,
+      startDate: '2025-01-01',
+    });
+
+    await expect(prisma.client.delete({ where: { uuid: client.id } })).rejects.toMatchObject({
+      code: 'P2003',
+    });
   });
 });

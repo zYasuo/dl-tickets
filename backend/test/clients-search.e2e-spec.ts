@@ -5,28 +5,28 @@ import { APP_GUARD } from '@nestjs/core';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { randomUUID } from 'node:crypto';
-import { RateLimitGuard } from '../src/common/rate-limit/rate-limit.guard';
-import { RateLimitModule } from '../src/common/rate-limit/rate-limit.module';
-import { RateLimitRedisStore } from '../src/common/rate-limit/rate-limit-redis.store';
-import { HttpExceptionFilter } from '../src/common/http/http-exception.filter';
-import { TransformResponseInterceptor } from '../src/common/http/transform-response.interceptor';
-import { rateLimitConfig } from '../src/config/rate-limit.config';
-import { TOKEN_PROVIDER } from '../src/modules/auth/di.tokens';
-import type { TokenProviderPort } from '../src/modules/auth/domain/ports/security/token-provider.port';
-import { JwtAuthGuard } from '../src/modules/auth/infrastructure/inbound/http/guards/jwt-auth.guard';
-import { ClientController } from '../src/modules/clients/infrastructure/inbound/http/controllers/client.controller';
-import { CreateClientUseCase } from '../src/modules/clients/application/use-cases/create-client.use-case';
-import { FindAllClientsUseCase } from '../src/modules/clients/application/use-cases/find-all-clients.use-case';
-import { FindClientByIdUseCase } from '../src/modules/clients/application/use-cases/find-client-by-id.use-case';
-import { SearchClientsUseCase } from '../src/modules/clients/application/use-cases/search-clients.use-case';
+import { RateLimitGuard } from 'src/common/rate-limit/rate-limit.guard';
+import { RateLimitModule } from 'src/common/rate-limit/rate-limit.module';
+import { RateLimitRedisStore } from 'src/common/rate-limit/rate-limit-redis.store';
+import { HttpExceptionFilter } from 'src/common/http/http-exception.filter';
+import { TransformResponseInterceptor } from 'src/common/http/transform-response.interceptor';
+import { rateLimitConfig } from 'src/config/rate-limit.config';
+import { TOKEN_PROVIDER } from 'src/modules/auth/di.tokens';
+import type { TokenProviderPort } from 'src/modules/auth/domain/ports/security/token-provider.port';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/inbound/http/guards/jwt-auth.guard';
+import { ClientController } from 'src/modules/clients/infrastructure/inbound/http/controllers/client.controller';
+import { CreateClientUseCase } from 'src/modules/clients/application/use-cases/create-client.use-case';
+import { FindAllClientsUseCase } from 'src/modules/clients/application/use-cases/find-all-clients.use-case';
+import { FindClientByIdUseCase } from 'src/modules/clients/application/use-cases/find-client-by-id.use-case';
+import { SearchClientsUseCase } from 'src/modules/clients/application/use-cases/search-clients.use-case';
 
 class MemoryRateLimitStore {
   private readonly counts = new Map<string, number>();
 
-  async increment(key: string, _windowSeconds: number): Promise<{ count: number }> {
+  increment(key: string, _windowSeconds: number): Promise<{ count: number }> {
     const c = (this.counts.get(key) ?? 0) + 1;
     this.counts.set(key, c);
-    return { count: c };
+    return Promise.resolve({ count: c });
   }
 }
 

@@ -1,0 +1,86 @@
+import { ArgumentsHost, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import type { Response } from 'express';
+import { ConcurrencyError } from '../errors/concurrency.error';
+import { HttpExceptionFilter } from './http-exception.filter';
+
+describe('HttpExceptionFilter', () => {
+  let filter: HttpExceptionFilter;
+
+  beforeEach(() => {
+    filter = new HttpExceptionFilter();
+  });
+
+  function mockHost(res: Partial<Response>): ArgumentsHost {
+    return {
+      switchToHttp: () => ({
+        getResponse: () => res as Response,
+      }),
+    } as ArgumentsHost;
+  }
+
+  it('maps HttpException to envelope with status and message', () => {
+    const json = jest.fn();
+    const status = jest.fn().mockReturnValue({ json });
+    const res = { status } as unknown as Response;
+
+    filter.catch(new BadRequestException('Invalid input'), mockHost(res));
+
+    expect(status).toHaveBeenCalledWith(400);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Invalid input',
+        timestamp: expect.any(String),
+      }),
+    );
+  });
+
+  it('maps ConcurrencyError to 409', () => {
+    const json = jest.fn();
+    const status = jest.fn().mockReturnValue({ json });
+    filter.catch(new ConcurrencyError('stale'), mockHost({ status } as unknown as Response));
+
+    expect(status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        statusCode: HttpStatus.CONFLICT,
+        message: 'stale',
+      }),
+    );
+  });
+
+  it('maps unknown errors to 500 without leaking stack trace', () => {
+    const json = jest.fn();
+    const status = jest.fn().mockReturnValue({ json });
+    const err = new TypeError('internal detail');
+
+    filter.catch(err, mockHost({ status } as unknown as Response));
+
+    expect(status).toHaveBeenCalledWith(500);
+    const body = json.mock.calls[0][0] as Record<string, unknown>;
+    expect(body.success).toBe(false);
+    expect(body.statusCode).toBe(500);
+    expect(body.message).toBe('Internal server error');
+    expect(body).not.toHaveProperty('stack');
+    expect(JSON.stringify(body)).not.toContain('internal detail');
+  });
+
+  it('uses object response from HttpException when provided', () => {
+    const json = jest.fn();
+    const status = jest.fn().mockReturnValue({ json });
+    const ex = new HttpException({ message: ['a', 'b'], error: 'Unprocessable Entity' }, 422);
+
+    filter.catch(ex, mockHost({ status } as unknown as Response));
+
+    expect(status).toHaveBeenCalledWith(422);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: ['a', 'b'],
+        error: 'Unprocessable Entity',
+      }),
+    );
+  });
+});

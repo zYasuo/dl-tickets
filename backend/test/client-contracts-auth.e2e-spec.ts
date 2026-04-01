@@ -4,34 +4,40 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD } from '@nestjs/core';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { RateLimitGuard } from '../src/common/rate-limit/rate-limit.guard';
-import { RateLimitModule } from '../src/common/rate-limit/rate-limit.module';
-import { RateLimitRedisStore } from '../src/common/rate-limit/rate-limit-redis.store';
-import { HttpExceptionFilter } from '../src/common/http/http-exception.filter';
-import { TransformResponseInterceptor } from '../src/common/http/transform-response.interceptor';
-import { rateLimitConfig } from '../src/config/rate-limit.config';
-import { TOKEN_PROVIDER } from '../src/modules/auth/di.tokens';
-import { JwtAuthGuard } from '../src/modules/auth/infrastructure/inbound/http/guards/jwt-auth.guard';
-import { ClientContractController } from '../src/modules/client-contracts/infrastructure/inbound/http/controllers/client-contract.controller';
-import { CreateClientContractUseCase } from '../src/modules/client-contracts/application/use-cases/create-client-contract.use-case';
-import { FindAllClientContractsUseCase } from '../src/modules/client-contracts/application/use-cases/find-all-client-contracts.use-case';
-import { FindClientContractByIdUseCase } from '../src/modules/client-contracts/application/use-cases/find-client-contract-by-id.use-case';
-import { UpdateClientContractUseCase } from '../src/modules/client-contracts/application/use-cases/update-client-contract.use-case';
+import { RateLimitGuard } from 'src/common/rate-limit/rate-limit.guard';
+import { RateLimitModule } from 'src/common/rate-limit/rate-limit.module';
+import { RateLimitRedisStore } from 'src/common/rate-limit/rate-limit-redis.store';
+import { HttpExceptionFilter } from 'src/common/http/http-exception.filter';
+import { TransformResponseInterceptor } from 'src/common/http/transform-response.interceptor';
+import { rateLimitConfig } from 'src/config/rate-limit.config';
+import { TOKEN_PROVIDER } from 'src/modules/auth/di.tokens';
+import type { TokenProviderPort } from 'src/modules/auth/domain/ports/security/token-provider.port';
+import { JwtAuthGuard } from 'src/modules/auth/infrastructure/inbound/http/guards/jwt-auth.guard';
+import { ClientContractController } from 'src/modules/client-contracts/infrastructure/inbound/http/controllers/client-contract.controller';
+import { CreateClientContractUseCase } from 'src/modules/client-contracts/application/use-cases/create-client-contract.use-case';
+import { FindAllClientContractsUseCase } from 'src/modules/client-contracts/application/use-cases/find-all-client-contracts.use-case';
+import { FindClientContractByIdUseCase } from 'src/modules/client-contracts/application/use-cases/find-client-contract-by-id.use-case';
+import { UpdateClientContractUseCase } from 'src/modules/client-contracts/application/use-cases/update-client-contract.use-case';
 
 class MemoryRateLimitStore {
   private readonly counts = new Map<string, number>();
 
-  async increment(key: string, _windowSeconds: number): Promise<{ count: number }> {
+  increment(key: string, _windowSeconds: number): Promise<{ count: number }> {
     const c = (this.counts.get(key) ?? 0) + 1;
     this.counts.set(key, c);
-    return { count: c };
+    return Promise.resolve({ count: c });
   }
 }
 
 describe('Client contracts require auth (e2e-style)', () => {
   let app: INestApplication<App>;
+  let tokenProvider: jest.Mocked<Pick<TokenProviderPort, 'verifyAccessToken'>>;
 
   beforeEach(async () => {
+    tokenProvider = {
+      verifyAccessToken: jest.fn().mockRejectedValue(new Error('invalid')),
+    };
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }), RateLimitModule],
       controllers: [ClientContractController],
@@ -42,12 +48,7 @@ describe('Client contracts require auth (e2e-style)', () => {
         { provide: UpdateClientContractUseCase, useValue: { execute: jest.fn() } },
         { provide: APP_GUARD, useClass: RateLimitGuard },
         { provide: APP_GUARD, useClass: JwtAuthGuard },
-        {
-          provide: TOKEN_PROVIDER,
-          useValue: {
-            verifyAccessToken: jest.fn().mockRejectedValue(new Error('invalid')),
-          },
-        },
+        { provide: TOKEN_PROVIDER, useValue: tokenProvider },
       ],
     })
       .overrideProvider(RateLimitRedisStore)
@@ -76,6 +77,15 @@ describe('Client contracts require auth (e2e-style)', () => {
     await request(app.getHttpServer())
       .post('/api/v1/client-contracts')
       .send({ contractNumber: 'C1' })
+      .expect(401);
+  });
+
+  it('returns 401 for invalid Bearer token on client-contracts', async () => {
+    tokenProvider.verifyAccessToken.mockRejectedValue(new Error('bad'));
+    await request(app.getHttpServer())
+      .get('/api/v1/client-contracts')
+      .set('Authorization', 'Bearer invalid')
+      .query({ page: 1, limit: 10 })
       .expect(401);
   });
 });
