@@ -2,12 +2,12 @@ import { Body, Controller } from '@nestjs/common';
 import { Public } from 'src/modules/auth/infrastructure/inbound/http/decorators/public.decorator';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
 import { CreateUserUseCase } from 'src/modules/users/application/use-cases/create-user.use-case';
-import { SCreateUser, type CreateUserBody } from 'src/modules/users/application/dto/create-user.dto';
-import { ZodValidationPipe } from '../../../../../../common/pipes/zod-validation.pipe';
 import {
-  toUserPublicHttp,
-  type UserPublicHttp,
-} from '../mappers/user-http.mapper';
+  SCreateUser,
+  type CreateUserBody,
+} from 'src/modules/users/application/dto/create-user.dto';
+import { ZodValidationPipe } from '../../../../../../common/pipes/zod-validation.pipe';
+import { toUserPublicHttp, type UserPublicHttp } from '../mappers/user-http.mapper';
 import { ApiUsers, UserDoc } from '../docs/user-doc.decorator';
 
 @Controller('users')

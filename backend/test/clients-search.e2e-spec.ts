@@ -37,18 +37,20 @@ describe('Clients unified search (e2e-style)', () => {
 
   beforeEach(async () => {
     tokenProvider = { verifyAccessToken: jest.fn() };
-    searchClients = { execute: jest.fn().mockResolvedValue({
-      data: [],
-      meta: {
-        total: 0,
-        page: 1,
-        limit: 20,
-        totalPages: 0,
-        hasNextPage: false,
-        hasPreviousPage: false,
-        nextCursor: null,
-      },
-    }) };
+    searchClients = {
+      execute: jest.fn().mockResolvedValue({
+        data: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 20,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+          nextCursor: null,
+        },
+      }),
+    };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
@@ -79,9 +81,8 @@ describe('Clients unified search (e2e-style)', () => {
     app.useGlobalFilters(new HttpExceptionFilter());
 
     const config = app.get(ConfigService);
-    const rl = config.getOrThrow<Record<string, { max: number; windowSeconds: number }>>(
-      'rateLimit',
-    );
+    const rl =
+      config.getOrThrow<Record<string, { max: number; windowSeconds: number }>>('rateLimit');
     rl['clients-search'] = { max: 1, windowSeconds: 60 };
 
     await app.init();
@@ -93,10 +94,7 @@ describe('Clients unified search (e2e-style)', () => {
 
   it('GET /clients/search requires Authorization', async () => {
     tokenProvider.verifyAccessToken.mockRejectedValue(new Error('invalid'));
-    await request(app.getHttpServer())
-      .get('/api/v1/clients/search')
-      .query({ q: 'x' })
-      .expect(401);
+    await request(app.getHttpServer()).get('/api/v1/clients/search').query({ q: 'x' }).expect(401);
   });
 
   it('GET /clients/search forwards to use case when authenticated', async () => {

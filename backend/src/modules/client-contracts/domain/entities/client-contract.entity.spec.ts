@@ -1,10 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Address } from 'src/common/vo/address.vo';
 import { DomainError } from 'src/common/errors/domain.error';
-import {
-  ClientContractEntity,
-  ClientContractStatus,
-} from './client-contract.entity';
+import { ClientContractEntity, ClientContractStatus } from './client-contract.entity';
 
 const base = () => ({
   id: randomUUID(),

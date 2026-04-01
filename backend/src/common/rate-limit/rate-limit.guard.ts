@@ -10,10 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { RATE_LIMIT_STORE, type RateLimitStore } from './di.tokens';
-import type {
-  RateLimitConfig,
-  RateLimitEndpointKey,
-} from '../../config/rate-limit.config';
+import type { RateLimitConfig, RateLimitEndpointKey } from '../../config/rate-limit.config';
 import { RATE_LIMIT_ENDPOINT_KEY } from './rate-limit-endpoint.decorator';
 
 @Injectable()

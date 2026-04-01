@@ -15,17 +15,8 @@ export class TicketRepository extends TicketRepositoryPort {
   }
 
   async findAll(criteria: TicketListCriteria): Promise<PaginatedResult<TicketEntity>> {
-    const {
-      page,
-      limit,
-      cursor,
-      createdFrom,
-      createdTo,
-      sortBy,
-      sortOrder,
-      status,
-      userUuid,
-    } = criteria;
+    const { page, limit, cursor, createdFrom, createdTo, sortBy, sortOrder, status, userUuid } =
+      criteria;
 
     const businessFilters: Prisma.TicketsWhereInput[] = [];
 

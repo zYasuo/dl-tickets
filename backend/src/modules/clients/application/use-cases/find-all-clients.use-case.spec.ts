@@ -10,10 +10,7 @@ describe('FindAllClientsUseCase', () => {
   beforeEach(async () => {
     repo = { findAll: jest.fn() };
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        FindAllClientsUseCase,
-        { provide: CLIENT_REPOSITORY, useValue: repo },
-      ],
+      providers: [FindAllClientsUseCase, { provide: CLIENT_REPOSITORY, useValue: repo }],
     }).compile();
     useCase = module.get(FindAllClientsUseCase);
   });

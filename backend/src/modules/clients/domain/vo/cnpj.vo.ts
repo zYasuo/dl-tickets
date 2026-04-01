@@ -11,20 +11,20 @@ function isValidCnpjDigits(digits: string): boolean {
   const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
   let sum = 0;
   for (let i = 0; i < 12; i++) {
-    sum += parseInt(digits[i]!, 10) * weights1[i]!;
+    sum += parseInt(digits[i], 10) * weights1[i];
   }
   let d1 = sum % 11;
   d1 = d1 < 2 ? 0 : 11 - d1;
-  if (d1 !== parseInt(digits[12]!, 10)) return false;
+  if (d1 !== parseInt(digits[12], 10)) return false;
 
   const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
   sum = 0;
   for (let i = 0; i < 13; i++) {
-    sum += parseInt(digits[i]!, 10) * weights2[i]!;
+    sum += parseInt(digits[i], 10) * weights2[i];
   }
   let d2 = sum % 11;
   d2 = d2 < 2 ? 0 : 11 - d2;
-  return d2 === parseInt(digits[13]!, 10);
+  return d2 === parseInt(digits[13], 10);
 }
 
 export class Cnpj {

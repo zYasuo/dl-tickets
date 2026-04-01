@@ -11,10 +11,7 @@ export function parseIntEnv(name: string, defaultValue: number): number {
   return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
-export function rateLimitEntryFromEnv(
-  envPrefix: string,
-  defaults: RateLimitEntry,
-): RateLimitEntry {
+export function rateLimitEntryFromEnv(envPrefix: string, defaults: RateLimitEntry): RateLimitEntry {
   return {
     max: parseIntEnv(`${envPrefix}_MAX`, defaults.max),
     windowSeconds: parseIntEnv(`${envPrefix}_WINDOW_SECONDS`, defaults.windowSeconds),

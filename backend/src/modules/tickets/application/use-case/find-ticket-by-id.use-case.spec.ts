@@ -25,9 +25,7 @@ describe('FindTicketByIdUseCase', () => {
 
   beforeEach(() => {
     ticketRepository = { findById: jest.fn() };
-    useCase = new FindTicketByIdUseCase(
-      ticketRepository as unknown as TicketRepositoryPort,
-    );
+    useCase = new FindTicketByIdUseCase(ticketRepository as unknown as TicketRepositoryPort);
   });
 
   it('throws NotFoundException when ticket is missing', async () => {

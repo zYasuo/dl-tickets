@@ -19,8 +19,9 @@ lerna-debug.log*
 /.env.production
 /.env.test
 
-# IDE na raiz
 /.idea/
+
+.cursor/
 
 *.pem
 *.key

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import type { PaginatedResult } from 'src/common/pagination/pagination.types';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
@@ -30,7 +30,6 @@ import {
   type ClientSearchRowHttp,
 } from '../mappers/client-http.mapper';
 
-/** All routes require a valid JWT (global JwtAuthGuard on the app). */
 @Controller('clients')
 @ApiClients()
 export class ClientController {

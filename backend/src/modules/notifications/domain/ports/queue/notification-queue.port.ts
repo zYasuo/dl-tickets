@@ -13,10 +13,6 @@ export type EnqueuePasswordResetPayload = {
 };
 
 export abstract class NotificationQueuePort {
-  abstract enqueueTicketCreated(
-    payload: EnqueueNotificationPayload,
-  ): Promise<void>;
-  abstract enqueuePasswordReset(
-    payload: EnqueuePasswordResetPayload,
-  ): Promise<void>;
+  abstract enqueueTicketCreated(payload: EnqueueNotificationPayload): Promise<void>;
+  abstract enqueuePasswordReset(payload: EnqueuePasswordResetPayload): Promise<void>;
 }

@@ -14,9 +14,7 @@ export type ClientContractPublicHttp = {
   updatedAt: string;
 };
 
-function addressToHttp(
-  entity: ClientContractEntity,
-): ClientAddressPublicHttp | null {
+function addressToHttp(entity: ClientContractEntity): ClientAddressPublicHttp | null {
   if (entity.useClientAddress || !entity.address) {
     return null;
   }
@@ -32,9 +30,7 @@ function addressToHttp(
   };
 }
 
-export function toClientContractPublicHttp(
-  entity: ClientContractEntity,
-): ClientContractPublicHttp {
+export function toClientContractPublicHttp(entity: ClientContractEntity): ClientContractPublicHttp {
   return {
     id: entity.id,
     contractNumber: entity.contractNumber,

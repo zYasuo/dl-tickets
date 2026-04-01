@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD } from '@nestjs/core';
-import request from 'supertest';
 import { randomUUID } from 'node:crypto';
+import { requestNest } from 'src/test-support/supertest-nest-app';
 import { CreateClientContractUseCase } from 'src/modules/client-contracts/application/use-cases/create-client-contract.use-case';
 import { FindAllClientContractsUseCase } from 'src/modules/client-contracts/application/use-cases/find-all-client-contracts.use-case';
 import { FindClientContractByIdUseCase } from 'src/modules/client-contracts/application/use-cases/find-client-contract-by-id.use-case';
@@ -57,14 +57,11 @@ describe('ClientContractController', () => {
   });
 
   it('returns 400 for invalid list query', () => {
-    return request(app.getHttpServer())
-      .get('/api/v1/client-contracts')
-      .query({ limit: 200 })
-      .expect(400);
+    return requestNest(app).get('/api/v1/client-contracts').query({ limit: 200 }).expect(400);
   });
 
   it('PATCH validates body', () => {
-    return request(app.getHttpServer())
+    return requestNest(app)
       .patch(`/api/v1/client-contracts/${randomUUID()}`)
       .send({ status: 'INVALID' })
       .expect(400);
@@ -83,7 +80,7 @@ describe('ClientContractController', () => {
       updatedAt: new Date(),
     });
     findByIdUc.execute.mockResolvedValue(entity);
-    const res = await request(app.getHttpServer()).get(`/api/v1/client-contracts/${id}`).expect(200);
+    const res = await requestNest(app).get(`/api/v1/client-contracts/${id}`).expect(200);
     expect(res.body.contractNumber).toBe('C1');
     expect(res.body.useClientAddress).toBe(true);
   });

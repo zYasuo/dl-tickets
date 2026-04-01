@@ -17,11 +17,7 @@ export function readRefreshTokenFromRequest(cookieHeader: string | undefined): s
   return undefined;
 }
 
-export function setRefreshTokenCookie(
-  res: Response,
-  token: string,
-  maxAgeMs: number,
-): void {
+export function setRefreshTokenCookie(res: Response, token: string, maxAgeMs: number): void {
   res.cookie(REFRESH_TOKEN_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

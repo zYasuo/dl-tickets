@@ -10,9 +10,9 @@ describe('ZodValidationPipe', () => {
 
   it('throws when body is null', () => {
     const pipe = new ZodValidationPipe(schema);
-    expect(() =>
-      pipe.transform(null, { type: 'body', metatype: undefined, data: '' }),
-    ).toThrow(BadRequestException);
+    expect(() => pipe.transform(null, { type: 'body', metatype: undefined, data: '' })).toThrow(
+      BadRequestException,
+    );
   });
 
   it('throws when body is undefined', () => {
@@ -24,11 +24,14 @@ describe('ZodValidationPipe', () => {
 
   it('parses valid body', () => {
     const pipe = new ZodValidationPipe(schema);
-    const out = pipe.transform({ name: 'Ada' }, {
-      type: 'body',
-      metatype: undefined,
-      data: '',
-    });
+    const out = pipe.transform(
+      { name: 'Ada' },
+      {
+        type: 'body',
+        metatype: undefined,
+        data: '',
+      },
+    );
     expect(out).toEqual({ name: 'Ada' });
   });
 

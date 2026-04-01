@@ -114,10 +114,7 @@ describe('ClientContractRepository', () => {
 
     expect(prisma.clientContract.count).toHaveBeenCalledWith({
       where: {
-        AND: [
-          { client: { uuid: clientUuid } },
-          { status: ClientContractStatus.ACTIVE },
-        ],
+        AND: [{ client: { uuid: clientUuid } }, { status: ClientContractStatus.ACTIVE }],
       },
     });
 

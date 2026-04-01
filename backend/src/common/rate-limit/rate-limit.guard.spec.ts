@@ -44,7 +44,11 @@ describe('RateLimitGuard', () => {
 
   it('allows non-http context', async () => {
     const reflector = { getAllAndOverride: jest.fn() } as unknown as Reflector;
-    const guard = new RateLimitGuard(reflector, configService, store as unknown as RateLimitRedisStore);
+    const guard = new RateLimitGuard(
+      reflector,
+      configService,
+      store as unknown as RateLimitRedisStore,
+    );
     const ctx = {
       getType: () => 'rpc',
     } as ExecutionContext;
@@ -56,7 +60,11 @@ describe('RateLimitGuard', () => {
     const reflector = {
       getAllAndOverride: jest.fn().mockReturnValue(undefined),
     } as unknown as Reflector;
-    const guard = new RateLimitGuard(reflector, configService, store as unknown as RateLimitRedisStore);
+    const guard = new RateLimitGuard(
+      reflector,
+      configService,
+      store as unknown as RateLimitRedisStore,
+    );
     const ctx = httpContext({ ip: '127.0.0.1' });
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
     expect(store.increment).not.toHaveBeenCalled();
@@ -67,7 +75,11 @@ describe('RateLimitGuard', () => {
       getAllAndOverride: jest.fn().mockReturnValue('tickets-list'),
     } as unknown as Reflector;
     store.increment.mockResolvedValue({ count: 1 });
-    const guard = new RateLimitGuard(reflector, configService, store as unknown as RateLimitRedisStore);
+    const guard = new RateLimitGuard(
+      reflector,
+      configService,
+      store as unknown as RateLimitRedisStore,
+    );
     const ctx = httpContext({ ip: '10.0.0.1' });
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
     expect(store.increment).toHaveBeenCalledWith('tickets-list:10.0.0.1', 60);
@@ -78,7 +90,11 @@ describe('RateLimitGuard', () => {
       getAllAndOverride: jest.fn().mockReturnValue('users-register'),
     } as unknown as Reflector;
     store.increment.mockResolvedValue({ count: 3 });
-    const guard = new RateLimitGuard(reflector, configService, store as unknown as RateLimitRedisStore);
+    const guard = new RateLimitGuard(
+      reflector,
+      configService,
+      store as unknown as RateLimitRedisStore,
+    );
     const ctx = httpContext({ ip: '192.168.1.1' });
     try {
       await guard.canActivate(ctx);
@@ -94,7 +110,11 @@ describe('RateLimitGuard', () => {
       getAllAndOverride: jest.fn().mockReturnValue('tickets-list'),
     } as unknown as Reflector;
     store.increment.mockResolvedValue({ count: 1 });
-    const guard = new RateLimitGuard(reflector, configService, store as unknown as RateLimitRedisStore);
+    const guard = new RateLimitGuard(
+      reflector,
+      configService,
+      store as unknown as RateLimitRedisStore,
+    );
     const ctx = httpContext({
       headers: { 'x-forwarded-for': '203.0.113.5, 10.0.0.1' },
       ip: '127.0.0.1',
@@ -108,7 +128,11 @@ describe('RateLimitGuard', () => {
       getAllAndOverride: jest.fn().mockReturnValue('tickets-list'),
     } as unknown as Reflector;
     store.increment.mockResolvedValue({ count: 1 });
-    const guard = new RateLimitGuard(reflector, configService, store as unknown as RateLimitRedisStore);
+    const guard = new RateLimitGuard(
+      reflector,
+      configService,
+      store as unknown as RateLimitRedisStore,
+    );
     const ctx = httpContext({
       ip: undefined,
       socket: { remoteAddress: '::1' } as unknown as Request['socket'],

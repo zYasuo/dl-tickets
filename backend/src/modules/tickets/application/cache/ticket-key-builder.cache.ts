@@ -15,17 +15,8 @@ export class TicketCacheKeyBuilder {
   async buildListKey(criteria: TicketListCriteria): Promise<string> {
     const versionKey = ticketUserListVersionKey(criteria.userUuid);
     const version = (await this.cache.get(versionKey)) ?? '1';
-    const {
-      page,
-      limit,
-      cursor,
-      createdFrom,
-      createdTo,
-      sortBy,
-      sortOrder,
-      status,
-      userUuid,
-    } = criteria;
+    const { page, limit, cursor, createdFrom, createdTo, sortBy, sortOrder, status, userUuid } =
+      criteria;
 
     return `tickets:all:v${version}:user:${userUuid ?? 'none'}:page:${page}:limit:${limit}:cursor:${cursor ?? 'none'}:from:${createdFrom ?? 'none'}:to:${createdTo ?? 'none'}:sort:${sortBy}:${sortOrder}:st:${status ?? 'all'}`;
   }

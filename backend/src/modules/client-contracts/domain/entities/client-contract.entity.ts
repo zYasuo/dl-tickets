@@ -111,16 +111,10 @@ export class ClientContractEntity {
     const next: ClientContractEntityProps = {
       ...this.params,
       ...(patch.contractNumber !== undefined ? { contractNumber: patch.contractNumber } : {}),
-      ...(patch.useClientAddress !== undefined
-        ? { useClientAddress: patch.useClientAddress }
-        : {}),
-      ...(patch.address !== undefined
-        ? { address: patch.address ?? undefined }
-        : {}),
+      ...(patch.useClientAddress !== undefined ? { useClientAddress: patch.useClientAddress } : {}),
+      ...(patch.address !== undefined ? { address: patch.address ?? undefined } : {}),
       ...(patch.startDate !== undefined ? { startDate: patch.startDate } : {}),
-      ...(patch.endDate !== undefined
-        ? { endDate: patch.endDate ?? undefined }
-        : {}),
+      ...(patch.endDate !== undefined ? { endDate: patch.endDate ?? undefined } : {}),
       ...(patch.status !== undefined ? { status: patch.status } : {}),
       updatedAt: patch.updatedAt ?? new Date(),
     };

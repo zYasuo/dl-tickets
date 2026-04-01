@@ -29,9 +29,7 @@ export function encodeTicketRow(entity: TicketEntity): CachedTicketRow {
   };
 }
 
-export function encodeTicketListPage(
-  result: PaginatedResult<TicketEntity>,
-): CachedTicketListPage {
+export function encodeTicketListPage(result: PaginatedResult<TicketEntity>): CachedTicketListPage {
   return {
     meta: result.meta,
     data: result.data.map((t) => encodeTicketRow(t)),
@@ -50,9 +48,7 @@ export function decodeTicketRow(row: CachedTicketRow): TicketEntity {
   });
 }
 
-export function decodeTicketListPage(
-  cached: CachedTicketListPage,
-): PaginatedResult<TicketEntity> {
+export function decodeTicketListPage(cached: CachedTicketListPage): PaginatedResult<TicketEntity> {
   return {
     meta: cached.meta,
     data: cached.data.map((row) => decodeTicketRow(row)),
@@ -76,9 +72,7 @@ export function isCachedTicketListPage(v: unknown): v is CachedTicketListPage {
   );
 }
 
-export function tryDecodeTicketListCache(
-  raw: unknown,
-): PaginatedResult<TicketEntity> | null {
+export function tryDecodeTicketListCache(raw: unknown): PaginatedResult<TicketEntity> | null {
   if (!isCachedTicketListPage(raw)) return null;
   return decodeTicketListPage(raw);
 }

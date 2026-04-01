@@ -34,9 +34,7 @@ export class CreateClientContractUseCase {
     const endDate = input.endDate ? atStartOfUtcDay(input.endDate) : undefined;
 
     const address =
-      !input.useClientAddress && input.address
-        ? Address.create(input.address)
-        : undefined;
+      !input.useClientAddress && input.address ? Address.create(input.address) : undefined;
 
     const now = new Date();
     let entity: ClientContractEntity;
@@ -63,12 +61,7 @@ export class CreateClientContractUseCase {
     try {
       return await this.contractRepository.create(entity);
     } catch (e: unknown) {
-      if (
-        e &&
-        typeof e === 'object' &&
-        'code' in e &&
-        (e as { code: string }).code === 'P2003'
-      ) {
+      if (e && typeof e === 'object' && 'code' in e && (e as { code: string }).code === 'P2003') {
         throw new NotFoundException('Client not found');
       }
       throw e;

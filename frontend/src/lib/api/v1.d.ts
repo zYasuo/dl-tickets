@@ -357,6 +357,7 @@ export interface components {
             name: string;
             cpf?: string;
             cnpj?: string;
+            isForeignNational: boolean;
             address: {
                 street: string;
                 number: string;

@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DomainError } from 'src/common/errors/domain.error';
 import { Address } from 'src/common/vo/address.vo';
 import { CLIENT_CONTRACT_REPOSITORY } from '../../di.tokens';
@@ -57,9 +52,7 @@ export class UpdateClientContractUseCase {
           throw e;
         }
       } else if (!p.address) {
-        throw new BadRequestException(
-          'address is required when useClientAddress is false',
-        );
+        throw new BadRequestException('address is required when useClientAddress is false');
       }
     }
 

@@ -1,7 +1,7 @@
 import { ConflictException, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import request from 'supertest';
 import { randomUUID } from 'node:crypto';
+import { requestNest } from 'src/test-support/supertest-nest-app';
 import { CreateUserUseCase } from 'src/modules/users/application/use-cases/create-user.use-case';
 import { UserEntity } from 'src/modules/users/domain/entities/user.entity';
 import { UserController } from './user.controller';
@@ -37,7 +37,7 @@ describe('UserController (integration)', () => {
   it('returns 409 when use case throws ConflictException', () => {
     createUser.execute.mockRejectedValue(new ConflictException('Registration failed'));
 
-    return request(app.getHttpServer())
+    return requestNest(app)
       .post('/api/v1/users')
       .send({
         name: 'Dan',
@@ -48,7 +48,7 @@ describe('UserController (integration)', () => {
   });
 
   it('returns 400 when body fails Zod validation', () => {
-    return request(app.getHttpServer())
+    return requestNest(app)
       .post('/api/v1/users')
       .send({ name: '', email: 'not-email', password: 'short' })
       .expect(400);
@@ -67,7 +67,7 @@ describe('UserController (integration)', () => {
       }),
     );
 
-    const res = await request(app.getHttpServer())
+    const res = await requestNest(app)
       .post('/api/v1/users')
       .send({
         name: 'Carol',

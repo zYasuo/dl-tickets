@@ -2084,6 +2084,10 @@
           "cnpj": {
             "type": "string"
           },
+          "isForeignNational": {
+            "type": "boolean",
+            "default": false
+          },
           "address": {
             "type": "object",
             "properties": {

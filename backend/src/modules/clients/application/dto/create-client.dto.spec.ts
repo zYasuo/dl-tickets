@@ -23,4 +23,25 @@ describe('SCreateClient', () => {
     });
     expect(r.success).toBe(true);
   });
+
+  it('rejects CPF when foreign national', () => {
+    const r = SCreateClient.safeParse({
+      name: 'X',
+      cpf: '529.982.247-25',
+      cnpj: '11.222.333/0001-81',
+      address,
+      isForeignNational: true,
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it('accepts CNPJ only when foreign national', () => {
+    const r = SCreateClient.safeParse({
+      name: 'X',
+      cnpj: '11.222.333/0001-81',
+      address,
+      isForeignNational: true,
+    });
+    expect(r.success).toBe(true);
+  });
 });

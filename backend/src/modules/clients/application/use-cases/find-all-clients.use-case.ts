@@ -8,9 +8,7 @@ import type { FindAllClientsQuery } from '../dto/find-all-clients.dto';
 
 @Injectable()
 export class FindAllClientsUseCase {
-  constructor(
-    @Inject(CLIENT_REPOSITORY) private readonly clientRepository: ClientRepositoryPort,
-  ) {}
+  constructor(@Inject(CLIENT_REPOSITORY) private readonly clientRepository: ClientRepositoryPort) {}
 
   async execute(query: FindAllClientsQuery): Promise<PaginatedResult<ClientEntity>> {
     const criteria: ClientListCriteria = {

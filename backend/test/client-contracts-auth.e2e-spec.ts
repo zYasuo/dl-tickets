@@ -33,10 +33,7 @@ describe('Client contracts require auth (e2e-style)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }),
-        RateLimitModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }), RateLimitModule],
       controllers: [ClientContractController],
       providers: [
         { provide: CreateClientContractUseCase, useValue: { execute: jest.fn() } },

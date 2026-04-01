@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD } from '@nestjs/core';
-import request from 'supertest';
 import { randomUUID } from 'node:crypto';
+import { requestNest } from 'src/test-support/supertest-nest-app';
 import { CreateClientUseCase } from 'src/modules/clients/application/use-cases/create-client.use-case';
 import { FindAllClientsUseCase } from 'src/modules/clients/application/use-cases/find-all-clients.use-case';
 import { FindClientByIdUseCase } from 'src/modules/clients/application/use-cases/find-client-by-id.use-case';
@@ -56,11 +56,11 @@ describe('ClientController', () => {
   });
 
   it('returns 400 for invalid query limit', () => {
-    return request(app.getHttpServer()).get('/api/v1/clients').query({ limit: 200 }).expect(400);
+    return requestNest(app).get('/api/v1/clients').query({ limit: 200 }).expect(400);
   });
 
   it('returns 400 when search q is empty', () => {
-    return request(app.getHttpServer()).get('/api/v1/clients/search').query({ q: '   ' }).expect(400);
+    return requestNest(app).get('/api/v1/clients/search').query({ q: '   ' }).expect(400);
   });
 
   it('GET forwards to use case', async () => {
@@ -76,7 +76,7 @@ describe('ClientController', () => {
         nextCursor: null,
       },
     });
-    await request(app.getHttpServer()).get('/api/v1/clients').query({ page: 1, limit: 10 }).expect(200);
+    await requestNest(app).get('/api/v1/clients').query({ page: 1, limit: 10 }).expect(200);
     expect(findAll.execute).toHaveBeenCalled();
   });
 
@@ -98,7 +98,7 @@ describe('ClientController', () => {
       updatedAt: new Date(),
     });
     findById.execute.mockResolvedValue(entity);
-    const res = await request(app.getHttpServer()).get(`/api/v1/clients/${id}`).expect(200);
+    const res = await requestNest(app).get(`/api/v1/clients/${id}`).expect(200);
     expect(res.body.id).toBe(id);
     expect(res.body.cpf).toBe('52998224725');
   });

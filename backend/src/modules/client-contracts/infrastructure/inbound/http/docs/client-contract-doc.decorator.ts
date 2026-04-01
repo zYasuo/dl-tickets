@@ -18,10 +18,7 @@ import {
 } from '../schemas/client-contract-public-http.openapi.dto';
 
 export function ApiClientContracts() {
-  return applyDecorators(
-    ApiTags('Client contracts'),
-    ApiBearerAuth(OPENAPI_ACCESS_TOKEN_SCHEME),
-  );
+  return applyDecorators(ApiTags('Client contracts'), ApiBearerAuth(OPENAPI_ACCESS_TOKEN_SCHEME));
 }
 
 export class ClientContractDoc {
@@ -78,7 +75,8 @@ export class ClientContractDoc {
       Post(),
       ApiOperation({
         summary: 'Create client contract',
-        description: 'Requires a valid JWT. No persisted link to User — only the authenticated caller is implied by the request.',
+        description:
+          'Requires a valid JWT. No persisted link to User — only the authenticated caller is implied by the request.',
       }),
       ApiBody({ type: CreateClientContractBodyDto }),
       ApiResponse({

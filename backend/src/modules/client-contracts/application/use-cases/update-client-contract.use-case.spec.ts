@@ -44,9 +44,9 @@ describe('UpdateClientContractUseCase', () => {
 
   it('rejects useClientAddress false without address on contract', async () => {
     repo.findById.mockResolvedValue(existing);
-    await expect(
-      useCase.execute(existing.id, { useClientAddress: false }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(useCase.execute(existing.id, { useClientAddress: false })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it('updates status', async () => {

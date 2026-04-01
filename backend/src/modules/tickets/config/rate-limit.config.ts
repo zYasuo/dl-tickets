@@ -23,7 +23,13 @@ export function buildTicketsRateLimitConfig(): Record<TicketsRateLimitKey, RateL
       'RATE_LIMIT_TICKETS_GET_BY_ID',
       defaults['tickets-get-by-id'],
     ),
-    'tickets-create': rateLimitEntryFromEnv('RATE_LIMIT_TICKETS_CREATE', defaults['tickets-create']),
-    'tickets-update': rateLimitEntryFromEnv('RATE_LIMIT_TICKETS_UPDATE', defaults['tickets-update']),
+    'tickets-create': rateLimitEntryFromEnv(
+      'RATE_LIMIT_TICKETS_CREATE',
+      defaults['tickets-create'],
+    ),
+    'tickets-update': rateLimitEntryFromEnv(
+      'RATE_LIMIT_TICKETS_UPDATE',
+      defaults['tickets-update'],
+    ),
   };
 }

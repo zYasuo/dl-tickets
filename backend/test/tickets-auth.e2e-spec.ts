@@ -33,10 +33,7 @@ describe('Tickets require auth (e2e-style)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }),
-        RateLimitModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }), RateLimitModule],
       controllers: [TicketController],
       providers: [
         { provide: CreateTicketUseCase, useValue: { execute: jest.fn() } },
@@ -69,6 +66,9 @@ describe('Tickets require auth (e2e-style)', () => {
   });
 
   it('GET /api/v1/tickets without Authorization returns 401', async () => {
-    await request(app.getHttpServer()).get('/api/v1/tickets').query({ page: 1, limit: 10 }).expect(401);
+    await request(app.getHttpServer())
+      .get('/api/v1/tickets')
+      .query({ page: 1, limit: 10 })
+      .expect(401);
   });
 });

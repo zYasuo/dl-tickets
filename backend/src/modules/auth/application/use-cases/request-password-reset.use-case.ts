@@ -1,8 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  PASSWORD_RESET_REPOSITORY,
-  TOKEN_PROVIDER,
-} from '../../di.tokens';
+import { PASSWORD_RESET_REPOSITORY, TOKEN_PROVIDER } from '../../di.tokens';
 import { NOTIFICATION_QUEUE_PORT } from 'src/modules/notifications/di.tokens';
 import { USER_REPOSITORY } from 'src/modules/users/di.tokens';
 import type { UserRepositoryPort } from 'src/modules/users/domain/ports/repository/user.repository.port';

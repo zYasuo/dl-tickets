@@ -9,10 +9,7 @@ import type { TicketListCriteria } from '../../domain/criteria/ticket-list.crite
 import type { TicketRepositoryPort } from '../../domain/ports/repository/ticket.repository.port';
 import { TicketCacheKeyBuilder } from '../cache/ticket-key-builder.cache';
 import type { FindAllTicketsQuery } from '../dto/find-all-ticket.dto';
-import {
-  encodeTicketListPage,
-  tryDecodeTicketListCache,
-} from '../mappers/ticket-cache.codec';
+import { encodeTicketListPage, tryDecodeTicketListCache } from '../mappers/ticket-cache.codec';
 
 @Injectable()
 export class FindAllTicketsUseCase {
@@ -47,9 +44,7 @@ export class FindAllTicketsUseCase {
       }
     } else {
       try {
-        const afterLock = tryDecodeTicketListCache(
-          await this.cachePort.getJson<unknown>(cacheKey),
-        );
+        const afterLock = tryDecodeTicketListCache(await this.cachePort.getJson<unknown>(cacheKey));
         if (afterLock) {
           return afterLock;
         }
@@ -69,11 +64,7 @@ export class FindAllTicketsUseCase {
 
     const result = await this.ticketRepository.findAll(criteria);
 
-    await this.cachePort.setJson(
-      cacheKey,
-      encodeTicketListPage(result),
-      this.CACHE_TTL_SECONDS,
-    );
+    await this.cachePort.setJson(cacheKey, encodeTicketListPage(result), this.CACHE_TTL_SECONDS);
 
     return result;
   }
@@ -92,7 +83,7 @@ export class FindAllTicketsUseCase {
     };
   }
 
-  private async waitForCacheRaw(cacheKey: string): Promise<unknown | null> {
+  private async waitForCacheRaw(cacheKey: string): Promise<unknown> {
     const deadline = Date.now() + CACHE_LOCK_POLICY.waitMaxMs;
 
     while (Date.now() < deadline) {
@@ -104,7 +95,7 @@ export class FindAllTicketsUseCase {
       }
     }
 
-    return null;
+    return undefined;
   }
 
   private async sleep(ms: number): Promise<void> {

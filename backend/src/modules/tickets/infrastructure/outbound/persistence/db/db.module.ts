@@ -9,9 +9,7 @@ import { PrismaModule } from 'nestjs-prisma';
       useFactory: () => {
         const connectionString = process.env.DATABASE_URL;
         if (!connectionString?.trim()) {
-          throw new Error(
-            'DATABASE_URL is not set or is empty. Check your .env or environment.',
-          );
+          throw new Error('DATABASE_URL is not set or is empty. Check your .env or environment.');
         }
         const adapter = new PrismaPg({ connectionString });
         return {

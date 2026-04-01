@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD } from '@nestjs/core';
-import request from 'supertest';
 import { randomUUID } from 'node:crypto';
+import { requestNest } from 'src/test-support/supertest-nest-app';
 import { CreateTicketUseCase } from 'src/modules/tickets/application/use-case/create-ticket.use-case';
 import { FindAllTicketsUseCase } from 'src/modules/tickets/application/use-case/find-all-tickets.use-case';
 import { UpdateTicketUseCase } from 'src/modules/tickets/application/use-case/update-ticket.use-case';
@@ -57,11 +57,11 @@ describe('TicketController (integration)', () => {
   });
 
   it('returns 400 for invalid query on GET /tickets', () => {
-    return request(app.getHttpServer()).get('/api/v1/tickets').query({ limit: 200 }).expect(400);
+    return requestNest(app).get('/api/v1/tickets').query({ limit: 200 }).expect(400);
   });
 
   it('returns 400 when createdFrom is after createdTo', () => {
-    return request(app.getHttpServer())
+    return requestNest(app)
       .get('/api/v1/tickets')
       .query({ page: 1, limit: 10, createdFrom: '2025-06-01', createdTo: '2025-01-01' })
       .expect(400);
@@ -81,7 +81,7 @@ describe('TicketController (integration)', () => {
       },
     });
 
-    await request(app.getHttpServer()).get('/api/v1/tickets').query({ page: 1, limit: 10 }).expect(200);
+    await requestNest(app).get('/api/v1/tickets').query({ page: 1, limit: 10 }).expect(200);
 
     expect(findAllTickets.execute).toHaveBeenCalledWith(
       expect.objectContaining({ page: 1, limit: 10 }),
@@ -103,7 +103,7 @@ describe('TicketController (integration)', () => {
       },
     });
 
-    await request(app.getHttpServer())
+    await requestNest(app)
       .get('/api/v1/tickets')
       .query({ page: 1, limit: 10, createdFrom: '2025-01-01', createdTo: '2025-01-31' })
       .expect(200);
@@ -120,14 +120,14 @@ describe('TicketController (integration)', () => {
   });
 
   it('returns 400 for invalid body on POST /tickets', () => {
-    return request(app.getHttpServer())
+    return requestNest(app)
       .post('/api/v1/tickets')
       .send({ title: '', description: '' })
       .expect(400);
   });
 
   it('returns 400 when PATCH id is not a UUID v4', () => {
-    return request(app.getHttpServer())
+    return requestNest(app)
       .patch('/api/v1/tickets/not-a-uuid')
       .send({
         title: 'T',
@@ -139,7 +139,7 @@ describe('TicketController (integration)', () => {
   });
 
   it('returns 400 when GET /tickets/:id id is not a UUID v4', () => {
-    return request(app.getHttpServer()).get('/api/v1/tickets/not-a-uuid').expect(400);
+    return requestNest(app).get('/api/v1/tickets/not-a-uuid').expect(400);
   });
 
   it('returns 200 on GET /tickets/:id with valid uuid v4', async () => {
@@ -156,7 +156,7 @@ describe('TicketController (integration)', () => {
       }),
     );
 
-    const res = await request(app.getHttpServer()).get(`/api/v1/tickets/${id}`).expect(200);
+    const res = await requestNest(app).get(`/api/v1/tickets/${id}`).expect(200);
 
     expect(findTicketById.execute).toHaveBeenCalledWith(id, userId);
     expect(res.body).toMatchObject({
@@ -181,7 +181,7 @@ describe('TicketController (integration)', () => {
       }),
     );
 
-    await request(app.getHttpServer())
+    await requestNest(app)
       .patch(`/api/v1/tickets/${id}`)
       .send({
         title: 'Ok',

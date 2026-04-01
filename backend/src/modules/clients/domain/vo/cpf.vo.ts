@@ -10,19 +10,19 @@ function isValidCpfDigits(digits: string): boolean {
 
   let sum = 0;
   for (let i = 0; i < 9; i++) {
-    sum += parseInt(digits[i]!, 10) * (10 - i);
+    sum += parseInt(digits[i], 10) * (10 - i);
   }
   let d1 = (sum * 10) % 11;
   if (d1 === 10) d1 = 0;
-  if (d1 !== parseInt(digits[9]!, 10)) return false;
+  if (d1 !== parseInt(digits[9], 10)) return false;
 
   sum = 0;
   for (let i = 0; i < 10; i++) {
-    sum += parseInt(digits[i]!, 10) * (11 - i);
+    sum += parseInt(digits[i], 10) * (11 - i);
   }
   let d2 = (sum * 10) % 11;
   if (d2 === 10) d2 = 0;
-  return d2 === parseInt(digits[10]!, 10);
+  return d2 === parseInt(digits[10], 10);
 }
 
 export class Cpf {

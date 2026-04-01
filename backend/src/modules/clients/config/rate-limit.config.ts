@@ -18,9 +18,15 @@ const defaults: Record<ClientsRateLimitKey, RateLimitEntry> = {
 
 export function buildClientsRateLimitConfig(): Record<ClientsRateLimitKey, RateLimitEntry> {
   return {
-    'clients-create': rateLimitEntryFromEnv('RATE_LIMIT_CLIENTS_CREATE', defaults['clients-create']),
+    'clients-create': rateLimitEntryFromEnv(
+      'RATE_LIMIT_CLIENTS_CREATE',
+      defaults['clients-create'],
+    ),
     'clients-list': rateLimitEntryFromEnv('RATE_LIMIT_CLIENTS_LIST', defaults['clients-list']),
-    'clients-search': rateLimitEntryFromEnv('RATE_LIMIT_CLIENTS_SEARCH', defaults['clients-search']),
+    'clients-search': rateLimitEntryFromEnv(
+      'RATE_LIMIT_CLIENTS_SEARCH',
+      defaults['clients-search'],
+    ),
     'clients-get-by-id': rateLimitEntryFromEnv(
       'RATE_LIMIT_CLIENTS_GET_BY_ID',
       defaults['clients-get-by-id'],

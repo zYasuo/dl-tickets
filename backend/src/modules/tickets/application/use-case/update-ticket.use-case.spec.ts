@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { CachePort } from 'src/common/ports/cache/cache.ports';
 import { Description } from '../../domain/vo/description.vo';
@@ -16,7 +12,18 @@ describe('UpdateTicketUseCase', () => {
   let useCase: UpdateTicketUseCase;
   let ticketRepository: jest.Mocked<Pick<TicketRepositoryPort, 'findById' | 'update'>>;
   let cachePort: jest.Mocked<
-    Pick<CachePort, 'del' | 'get' | 'set' | 'exists' | 'getJson' | 'setJson' | 'incr' | 'acquireLock' | 'releaseLock'>
+    Pick<
+      CachePort,
+      | 'del'
+      | 'get'
+      | 'set'
+      | 'exists'
+      | 'getJson'
+      | 'setJson'
+      | 'incr'
+      | 'acquireLock'
+      | 'releaseLock'
+    >
   >;
 
   const ticketId = randomUUID();

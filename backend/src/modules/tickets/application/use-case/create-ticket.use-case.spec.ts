@@ -16,7 +16,18 @@ describe('CreateTicketUseCase', () => {
   let useCase: CreateTicketUseCase;
   let ticketRepository: jest.Mocked<Pick<TicketRepositoryPort, 'create'>>;
   let cachePort: jest.Mocked<
-    Pick<CachePort, 'incr' | 'setJson' | 'get' | 'set' | 'del' | 'exists' | 'getJson' | 'acquireLock' | 'releaseLock'>
+    Pick<
+      CachePort,
+      | 'incr'
+      | 'setJson'
+      | 'get'
+      | 'set'
+      | 'del'
+      | 'exists'
+      | 'getJson'
+      | 'acquireLock'
+      | 'releaseLock'
+    >
   >;
   let notificationRepository: jest.Mocked<Pick<NotificationRepositoryPort, 'create'>>;
   let notificationQueue: jest.Mocked<Pick<NotificationQueuePort, 'enqueueTicketCreated'>>;

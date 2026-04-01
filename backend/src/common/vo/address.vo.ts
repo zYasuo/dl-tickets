@@ -32,13 +32,10 @@ export class Address {
 
     const street = typeof input.street === 'string' ? input.street.trim() : '';
     const number = typeof input.number === 'string' ? input.number.trim() : '';
-    const neighborhood =
-      typeof input.neighborhood === 'string' ? input.neighborhood.trim() : '';
+    const neighborhood = typeof input.neighborhood === 'string' ? input.neighborhood.trim() : '';
     const city = typeof input.city === 'string' ? input.city.trim() : '';
     const stateRaw = typeof input.state === 'string' ? input.state.trim().toUpperCase() : '';
-    const zipCode = normalizeZip(
-      typeof input.zipCode === 'string' ? input.zipCode : '',
-    );
+    const zipCode = normalizeZip(typeof input.zipCode === 'string' ? input.zipCode : '');
     const complement =
       typeof input.complement === 'string' && input.complement.trim()
         ? input.complement.trim()

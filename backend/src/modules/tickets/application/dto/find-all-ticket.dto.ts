@@ -15,10 +15,10 @@ export const SFindAllTicket = z
     sortOrder: z.enum(['asc', 'desc']).default('desc'),
     status: z.enum(TicketStatus).optional(),
   })
-  .refine(
-    (q) => !q.createdFrom || !q.createdTo || q.createdFrom <= q.createdTo,
-    { message: 'createdFrom must be on or before createdTo', path: ['createdTo'] },
-  );
+  .refine((q) => !q.createdFrom || !q.createdTo || q.createdFrom <= q.createdTo, {
+    message: 'createdFrom must be on or before createdTo',
+    path: ['createdTo'],
+  });
 
 export type FindAllTicketsQuery = z.infer<typeof SFindAllTicket>;
 

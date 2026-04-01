@@ -11,6 +11,9 @@ const defaults: Record<UsersRateLimitKey, RateLimitEntry> = {
 
 export function buildUsersRateLimitConfig(): Record<UsersRateLimitKey, RateLimitEntry> {
   return {
-    'users-register': rateLimitEntryFromEnv('RATE_LIMIT_USERS_REGISTER', defaults['users-register']),
+    'users-register': rateLimitEntryFromEnv(
+      'RATE_LIMIT_USERS_REGISTER',
+      defaults['users-register'],
+    ),
   };
 }

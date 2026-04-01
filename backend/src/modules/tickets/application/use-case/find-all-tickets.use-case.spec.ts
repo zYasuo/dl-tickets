@@ -20,7 +20,18 @@ describe('FindAllTicketsUseCase', () => {
   let useCase: FindAllTicketsUseCase;
   let ticketRepository: jest.Mocked<Pick<TicketRepositoryPort, 'findAll'>>;
   let cachePort: jest.Mocked<
-    Pick<CachePort, 'getJson' | 'setJson' | 'acquireLock' | 'releaseLock' | 'get' | 'set' | 'del' | 'exists' | 'incr'>
+    Pick<
+      CachePort,
+      | 'getJson'
+      | 'setJson'
+      | 'acquireLock'
+      | 'releaseLock'
+      | 'get'
+      | 'set'
+      | 'del'
+      | 'exists'
+      | 'incr'
+    >
   >;
   let cacheKeyBuilder: TicketCacheKeyBuilder;
 

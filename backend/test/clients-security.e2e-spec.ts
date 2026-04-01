@@ -81,9 +81,8 @@ describe('Clients security (e2e-style)', () => {
     app.useGlobalFilters(new HttpExceptionFilter());
 
     const config = app.get(ConfigService);
-    const rl = config.getOrThrow<Record<string, { max: number; windowSeconds: number }>>(
-      'rateLimit',
-    );
+    const rl =
+      config.getOrThrow<Record<string, { max: number; windowSeconds: number }>>('rateLimit');
     rl['clients-list'] = { max: 1, windowSeconds: 60 };
 
     await app.init();

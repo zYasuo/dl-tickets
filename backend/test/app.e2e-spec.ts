@@ -88,7 +88,10 @@ describe('Tickets HTTP (e2e-style)', () => {
   const e2eUserUuid = randomUUID();
 
   beforeEach(async () => {
-    const ticketRepository: Pick<TicketRepositoryPort, 'findAll' | 'create' | 'findById' | 'update'> = {
+    const ticketRepository: Pick<
+      TicketRepositoryPort,
+      'findAll' | 'create' | 'findById' | 'update'
+    > = {
       findAll: jest.fn().mockResolvedValue({
         data: [],
         meta: {
@@ -107,10 +110,7 @@ describe('Tickets HTTP (e2e-style)', () => {
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }),
-        RateLimitModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }), RateLimitModule],
       controllers: [TicketController],
       providers: [
         { provide: APP_GUARD, useClass: RateLimitGuard },
@@ -179,7 +179,10 @@ describe('Tickets HTTP (e2e-style)', () => {
   });
 
   it('GET /api/v1/tickets returns paginated envelope', async () => {
-    const res = await request(app.getHttpServer()).get('/api/v1/tickets').query({ page: 1, limit: 10 }).expect(200);
+    const res = await request(app.getHttpServer())
+      .get('/api/v1/tickets')
+      .query({ page: 1, limit: 10 })
+      .expect(200);
 
     expect(res.body.success).toBe(true);
     expect(res.body.data).toMatchObject({

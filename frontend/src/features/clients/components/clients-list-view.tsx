@@ -1,16 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { pt } from "date-fns/locale";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useClientsList } from "@/features/clients/hooks/use-clients-list";
 import { clientDocumentLabel } from "@/features/clients/lib/display";
+import { formatClientAddress } from "@/features/clients/lib/format-address";
 import { buildPaginationItems } from "@/features/tickets/lib/pagination-page-items";
+import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/shared/components/ui/button-variants";
 import { ErrorAlert } from "@/shared/components/error-alert";
 import { EmptyState } from "@/shared/components/empty-state";
 import { PageHeader } from "@/shared/components/page-header";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -38,38 +44,138 @@ import {
 } from "@/shared/components/ui/table";
 
 const DEFAULT_LIMIT = 10;
+const SEARCH_DEBOUNCE_MS = 300;
+const API_DISABLED_TITLE = "Indisponível — API em evolução";
+
+type ClientsListCardProps = {
+  searchInput: string;
+  setSearchInput: (value: string) => void;
+  nameFilter: string | undefined;
+};
 
 export function ClientsListView() {
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
+  const nameFilter =
+    debouncedSearch.trim().length > 0 ? debouncedSearch.trim() : undefined;
+
+  return (
+    <div className="flex w-full flex-col gap-5 px-3 py-4 sm:gap-6 sm:px-4 md:px-5">
+      <PageHeader title="Clientes" />
+      <ClientsListCard
+        key={debouncedSearch}
+        searchInput={searchInput}
+        setSearchInput={setSearchInput}
+        nameFilter={nameFilter}
+      />
+    </div>
+  );
+}
+
+function ClientsListCard({
+  searchInput,
+  setSearchInput,
+  nameFilter,
+}: ClientsListCardProps) {
   const [page, setPage] = useState(1);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const updatePage = (next: number | ((p: number) => number)) => {
+    setSelectedId(null);
+    setPage(next);
+  };
+
+  const listOptions = useMemo(
+    () => ({
+      sortBy: "updatedAt" as const,
+      sortOrder: "desc" as const,
+      ...(nameFilter ? { name: nameFilter } : {}),
+    }),
+    [nameFilter],
+  );
+
   const { data, isPending, isError, error } = useClientsList(
     page,
     DEFAULT_LIMIT,
-    { sortBy: "updatedAt", sortOrder: "desc" },
+    listOptions,
   );
 
   const clients = data?.data ?? [];
   const meta = data?.meta;
   const totalPages = meta?.totalPages ?? 0;
 
-  return (
-    <div className="flex w-full flex-col gap-5 px-3 py-4 sm:gap-6 sm:px-4 md:px-5">
-      <PageHeader
-        title="Clientes"
-        description="Lista paginada de clientes (GET /api/v1/clients)."
-      />
+  const rangeLabel = useMemo(() => {
+    if (!meta || isPending) return "A carregar…";
+    if (meta.total === 0) return "0 registos";
+    if (clients.length === 0) return `Sem registos nesta página · ${meta.total.toLocaleString("pt-PT")} no total`;
+    const from = (meta.page - 1) * meta.limit + 1;
+    const to = from + clients.length - 1;
+    return `${from.toLocaleString("pt-PT")} – ${to.toLocaleString("pt-PT")} de ${meta.total.toLocaleString("pt-PT")}`;
+  }, [meta, isPending, clients.length]);
 
+  return (
+    <>
       {isError ? (
         <ErrorAlert title="Não foi possível carregar os clientes" error={error} />
       ) : null}
 
-      <Card size="sm">
-        <CardHeader>
-          <CardTitle>Registos</CardTitle>
-          <CardDescription>
-            {meta != null
-              ? `${meta.total.toLocaleString("pt-PT")} cliente(s) no total.`
-              : "A carregar…"}
-          </CardDescription>
+      <Card
+        className="gap-0 overflow-hidden border-border/80 shadow-sm ring-1 ring-foreground/6"
+        size="sm"
+      >
+        <CardHeader className="space-y-4 border-b border-border/80 bg-muted/20 px-4 py-4 sm:px-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 space-y-1">
+              <CardTitle className="text-base">Registo de clientes</CardTitle>
+              <CardDescription>{rangeLabel}</CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/dashboard/clients/new"
+                className={cn(
+                  buttonVariants({ variant: "default", size: "default" }),
+                  "inline-flex gap-1.5",
+                )}
+              >
+                <Plus className="size-4 shrink-0" aria-hidden />
+                Novo
+              </Link>
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-1.5"
+                disabled
+                title={API_DISABLED_TITLE}
+              >
+                <Pencil className="size-4 shrink-0" aria-hidden />
+                Editar
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-1.5"
+                disabled
+                title={API_DISABLED_TITLE}
+              >
+                <Trash2 className="size-4 shrink-0" aria-hidden />
+                Deletar
+              </Button>
+            </div>
+          </div>
+          <div className="relative max-w-md">
+            <Search
+              className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <Input
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Pesquisar por nome…"
+              aria-label="Pesquisar clientes por nome"
+              className="h-9 pl-9"
+            />
+          </div>
         </CardHeader>
         <CardContent className="px-0 sm:px-0">
           {isPending ? (
@@ -77,45 +183,82 @@ export function ClientsListView() {
               <Skeleton className="h-48 w-full" />
             </div>
           ) : clients.length === 0 ? (
-            <div className="px-4 py-6">
+            <div className="px-4 py-10">
               <EmptyState
-                title="Sem clientes"
-                description="Ainda não existem clientes na conta."
-              />
+                title={nameFilter ? "Nenhum resultado" : "Sem clientes"}
+                description={
+                  nameFilter
+                    ? "Tenta outro termo ou limpa a pesquisa."
+                    : "Cria o primeiro cliente com o botão Novo."
+                }
+              >
+                {nameFilter ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSearchInput("")}
+                  >
+                    Limpar pesquisa
+                  </Button>
+                ) : null}
+              </EmptyState>
             </div>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="hover:bg-transparent">
                   <TableHead>Nome</TableHead>
                   <TableHead className="hidden sm:table-cell">Documento</TableHead>
-                  <TableHead className="hidden md:table-cell">Atualizado</TableHead>
+                  <TableHead className="hidden lg:table-cell">Cidade</TableHead>
+                  <TableHead className="hidden xl:table-cell">Morada</TableHead>
+                  <TableHead className="hidden md:table-cell">Actualizado</TableHead>
                   <TableHead className="w-[100px] text-end">Ação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {clients.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium">{c.name}</TableCell>
-                    <TableCell className="hidden text-muted-foreground sm:table-cell">
-                      {clientDocumentLabel(c) ?? "—"}
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground md:table-cell">
-                      {formatDistanceToNow(new Date(c.updatedAt), {
-                        addSuffix: true,
-                        locale: pt,
-                      })}
-                    </TableCell>
-                    <TableCell className="text-end">
-                      <Link
-                        href={`/dashboard/clients/${encodeURIComponent(c.id)}`}
-                        className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                {clients.map((c) => {
+                  const shortAddr = `${c.address.street}, ${c.address.number}`;
+                  return (
+                    <TableRow
+                      key={c.id}
+                      data-state={selectedId === c.id ? "selected" : undefined}
+                      className={cn(
+                        "cursor-pointer even:bg-muted/25",
+                        selectedId === c.id && "bg-muted/50",
+                      )}
+                      aria-selected={selectedId === c.id}
+                      onClick={() => setSelectedId(c.id)}
+                    >
+                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell className="hidden text-muted-foreground sm:table-cell">
+                        {clientDocumentLabel(c) ?? "—"}
+                      </TableCell>
+                      <TableCell className="hidden text-muted-foreground lg:table-cell">
+                        {c.address.city}
+                      </TableCell>
+                      <TableCell
+                        className="hidden max-w-[220px] truncate text-muted-foreground xl:table-cell"
+                        title={formatClientAddress(c.address)}
                       >
-                        Detalhe
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        {shortAddr}
+                      </TableCell>
+                      <TableCell className="hidden text-muted-foreground md:table-cell">
+                        {formatDistanceToNow(new Date(c.updatedAt), {
+                          addSuffix: true,
+                          locale: pt,
+                        })}
+                      </TableCell>
+                      <TableCell className="text-end" onClick={(e) => e.stopPropagation()}>
+                        <Link
+                          href={`/dashboard/clients/${encodeURIComponent(c.id)}`}
+                          className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                        >
+                          Detalhe
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -129,7 +272,7 @@ export function ClientsListView() {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        setPage((p) => Math.max(1, p - 1));
+                        updatePage((p) => Math.max(1, p - 1));
                       }}
                       aria-disabled={page <= 1}
                       className={cn(page <= 1 && "pointer-events-none opacity-50")}
@@ -147,7 +290,7 @@ export function ClientsListView() {
                           isActive={item === page}
                           onClick={(e) => {
                             e.preventDefault();
-                            setPage(item);
+                            updatePage(item);
                           }}
                         >
                           {item}
@@ -160,7 +303,7 @@ export function ClientsListView() {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        setPage((p) => Math.min(totalPages, p + 1));
+                        updatePage((p) => Math.min(totalPages, p + 1));
                       }}
                       aria-disabled={page >= totalPages}
                       className={cn(
@@ -174,6 +317,6 @@ export function ClientsListView() {
           ) : null}
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

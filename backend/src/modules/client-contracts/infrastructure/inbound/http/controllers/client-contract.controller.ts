@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import type { PaginatedResult } from 'src/common/pagination/pagination.types';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
@@ -31,10 +22,7 @@ import {
   SUpdateClientContract,
   type UpdateClientContractBody,
 } from 'src/modules/client-contracts/application/dto/update-client-contract.dto';
-import {
-  ApiClientContracts,
-  ClientContractDoc,
-} from '../docs/client-contract-doc.decorator';
+import { ApiClientContracts, ClientContractDoc } from '../docs/client-contract-doc.decorator';
 import {
   toClientContractPublicHttp,
   type ClientContractPublicHttp,

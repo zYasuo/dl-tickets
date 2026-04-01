@@ -22,38 +22,26 @@ export class NotificationQueueAdapter extends NotificationQueuePort {
     super();
   }
 
-  async enqueueTicketCreated(
-    payload: EnqueueNotificationPayload,
-  ): Promise<void> {
-    const job = await this.queue.add(
-      NotificationJobName.TICKET_CREATED,
-      payload,
-      {
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 1000 },
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
-    );
+  async enqueueTicketCreated(payload: EnqueueNotificationPayload): Promise<void> {
+    const job = await this.queue.add(NotificationJobName.TICKET_CREATED, payload, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 1000 },
+      removeOnComplete: true,
+      removeOnFail: false,
+    });
 
     this.logger.log(
       `Job ${job.id} enqueued [${NotificationJobName.TICKET_CREATED}] for notification ${payload.notificationId}`,
     );
   }
 
-  async enqueuePasswordReset(
-    payload: EnqueuePasswordResetPayload,
-  ): Promise<void> {
-    const job = await this.queue.add(
-      NotificationJobName.PASSWORD_RESET,
-      payload,
-      {
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 1000 },
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
-    );
+  async enqueuePasswordReset(payload: EnqueuePasswordResetPayload): Promise<void> {
+    const job = await this.queue.add(NotificationJobName.PASSWORD_RESET, payload, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 1000 },
+      removeOnComplete: true,
+      removeOnFail: false,
+    });
 
     this.logger.log(
       `Job ${job.id} enqueued [${NotificationJobName.PASSWORD_RESET}] for user ${payload.userId}`,

@@ -17,9 +17,14 @@ export const SCreateClient = z
     cpf: z.string().optional(),
     cnpj: z.string().optional(),
     address: SAddressBody,
+    isForeignNational: z.boolean().optional().default(false),
   })
   .refine((b) => Boolean(b.cpf?.trim()) || Boolean(b.cnpj?.trim()), {
     message: 'At least one of CPF or CNPJ is required',
+    path: ['cpf'],
+  })
+  .refine((b) => !b.isForeignNational || !b.cpf?.trim(), {
+    message: 'CPF is not allowed for foreign clients',
     path: ['cpf'],
   });
 

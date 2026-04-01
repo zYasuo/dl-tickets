@@ -1,10 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { CachePort } from 'src/common/ports/cache/cache.ports';
 import type { TicketListCriteria } from '../../domain/criteria/ticket-list.criteria';
-import {
-  TicketCacheKeyBuilder,
-  ticketUserListVersionKey,
-} from './ticket-key-builder.cache';
+import { TicketCacheKeyBuilder, ticketUserListVersionKey } from './ticket-key-builder.cache';
 
 describe('TicketCacheKeyBuilder', () => {
   let cache: jest.Mocked<Pick<CachePort, 'get' | 'incr'>>;

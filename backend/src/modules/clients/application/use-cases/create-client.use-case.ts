@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { DomainError } from 'src/common/errors/domain.error';
 import { Address } from 'src/common/vo/address.vo';
@@ -23,8 +18,10 @@ export class CreateClientUseCase {
   ) {}
 
   async execute(input: CreateClientBody): Promise<ClientEntity> {
-    const cpf = input.cpf?.trim() ? Cpf.create(input.cpf) : undefined;
-    const cnpj = input.cnpj?.trim() ? Cnpj.create(input.cnpj) : undefined;
+    const { isForeignNational: _fn, ...payload } = input;
+    void _fn;
+    const cpf = payload.cpf?.trim() ? Cpf.create(payload.cpf) : undefined;
+    const cnpj = payload.cnpj?.trim() ? Cnpj.create(payload.cnpj) : undefined;
 
     if (cpf) {
       const existing = await this.clientRepository.findByCpf(cpf.value);
@@ -44,10 +41,10 @@ export class CreateClientUseCase {
     try {
       entity = ClientEntity.create({
         id: randomUUID(),
-        name: input.name,
+        name: payload.name,
         cpf,
         cnpj,
-        address: Address.create(input.address),
+        address: Address.create(payload.address),
         createdAt: now,
         updatedAt: now,
       });
@@ -64,12 +61,7 @@ export class CreateClientUseCase {
       await this.clientCacheKeyBuilder.bumpListVersion();
       return created;
     } catch (e: unknown) {
-      if (
-        e &&
-        typeof e === 'object' &&
-        'code' in e &&
-        (e as { code: string }).code === 'P2002'
-      ) {
+      if (e && typeof e === 'object' && 'code' in e && (e as { code: string }).code === 'P2002') {
         throw new ConflictException('Duplicate document');
       }
       throw e;

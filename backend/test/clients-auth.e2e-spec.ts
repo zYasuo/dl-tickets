@@ -33,10 +33,7 @@ describe('Clients require auth (e2e-style)', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }),
-        RateLimitModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }), RateLimitModule],
       controllers: [ClientController],
       providers: [
         { provide: CreateClientUseCase, useValue: { execute: jest.fn() } },
@@ -69,7 +66,10 @@ describe('Clients require auth (e2e-style)', () => {
   });
 
   it('GET /api/v1/clients without Authorization returns 401', async () => {
-    await request(app.getHttpServer()).get('/api/v1/clients').query({ page: 1, limit: 10 }).expect(401);
+    await request(app.getHttpServer())
+      .get('/api/v1/clients')
+      .query({ page: 1, limit: 10 })
+      .expect(401);
   });
 
   it('POST /api/v1/clients without Authorization returns 401', async () => {

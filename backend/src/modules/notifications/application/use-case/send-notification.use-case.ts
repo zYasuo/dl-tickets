@@ -12,8 +12,7 @@ export class SendNotificationUseCase {
   ) {}
 
   async execute(notificationId: string): Promise<void> {
-    const notification =
-      await this.notificationRepository.findById(notificationId);
+    const notification = await this.notificationRepository.findById(notificationId);
 
     if (!notification) {
       this.logger.warn(`Notification ${notificationId} not found, skipping`);
@@ -30,9 +29,7 @@ export class SendNotificationUseCase {
       const sent = notification.markAsSent();
       await this.notificationRepository.updateStatus(sent);
 
-      this.logger.log(
-        `[EMAIL] Notification ${notificationId} sent successfully`,
-      );
+      this.logger.log(`[EMAIL] Notification ${notificationId} sent successfully`);
     } catch (error) {
       this.logger.error(
         `[EMAIL] Failed to send notification ${notificationId}`,

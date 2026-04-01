@@ -1,9 +1,4 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  NestInterceptor,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import type { HttpSuccessEnvelope } from './http-contract.types';
@@ -15,7 +10,7 @@ export class TransformResponseInterceptor implements NestInterceptor {
     next: CallHandler,
   ): Observable<HttpSuccessEnvelope<unknown>> {
     return next.handle().pipe(
-      map((data) => ({
+      map((data: unknown) => ({
         success: true as const,
         timestamp: new Date().toISOString(),
         data,

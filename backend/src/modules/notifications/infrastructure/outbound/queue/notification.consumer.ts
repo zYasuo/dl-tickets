@@ -24,10 +24,8 @@ export class NotificationConsumer extends WorkerHost {
     super();
   }
 
-  async process(
-    job: Job<EnqueueNotificationPayload | EnqueuePasswordResetPayload>,
-  ): Promise<void> {
-    switch (job.name) {
+  async process(job: Job<EnqueueNotificationPayload | EnqueuePasswordResetPayload>): Promise<void> {
+    switch (job.name as NotificationJobName) {
       case NotificationJobName.TICKET_CREATED:
         await this.sendNotificationUseCase.execute(
           (job.data as EnqueueNotificationPayload).notificationId,

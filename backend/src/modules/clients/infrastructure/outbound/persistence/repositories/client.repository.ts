@@ -104,9 +104,7 @@ export class ClientRepository extends ClientRepositoryPort {
     return toDomain(row);
   }
 
-  async searchByAddress(
-    criteria: SearchByAddressCriteria,
-  ): Promise<PaginatedResult<ClientEntity>> {
+  async searchByAddress(criteria: SearchByAddressCriteria): Promise<PaginatedResult<ClientEntity>> {
     const { term, page, limit } = criteria;
     const trimmed = term.trim();
     const pattern = `%${escapeIlikePattern(trimmed)}%`;

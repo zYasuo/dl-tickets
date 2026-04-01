@@ -52,10 +52,7 @@ describe('SearchClientsUseCase', () => {
     const entity = baseEntity();
     repo.findByCpf.mockResolvedValue(entity);
 
-    const result = await useCase.execute(
-      { q: '529.982.247-25', page: 1, limit: 20 },
-      'user-uuid',
-    );
+    const result = await useCase.execute({ q: '529.982.247-25', page: 1, limit: 20 }, 'user-uuid');
 
     expect(repo.findByCpf).toHaveBeenCalledWith('52998224725');
     expect(result.data).toHaveLength(1);

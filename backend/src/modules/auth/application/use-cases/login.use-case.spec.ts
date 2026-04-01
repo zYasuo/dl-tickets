@@ -80,9 +80,9 @@ describe('LoginUseCase', () => {
     );
     passwordHasher.compare.mockResolvedValueOnce(false);
 
-    await expect(
-      useCase.execute({ email: 'a@b.com', password: 'wrong' }),
-    ).rejects.toThrow(UnauthorizedException);
+    await expect(useCase.execute({ email: 'a@b.com', password: 'wrong' })).rejects.toThrow(
+      UnauthorizedException,
+    );
 
     expect(refreshTokenRepository.create).not.toHaveBeenCalled();
   });
