@@ -104,3 +104,56 @@ model PasswordReset {
   @@index([tokenHash])
   @@map("password_resets")
 }
+
+model Client {
+  id           Int      @id @default(autoincrement())
+  uuid         String   @unique @default(uuid()) @map("uuid") @db.VarChar(36)
+  name         String   @map("name") @db.VarChar(255)
+  cpf          String?  @unique @map("cpf") @db.VarChar(11)
+  cnpj         String?  @unique @map("cnpj") @db.VarChar(14)
+  street       String   @map("street") @db.VarChar(255)
+  number       String   @map("address_number") @db.VarChar(20)
+  complement   String?  @map("complement") @db.VarChar(100)
+  neighborhood String   @map("neighborhood") @db.VarChar(100)
+  city         String   @map("city") @db.VarChar(100)
+  state        String   @map("state") @db.VarChar(2)
+  zipCode      String   @map("zip_code") @db.VarChar(8)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  contracts ClientContract[]
+
+  @@map("clients")
+}
+
+enum ClientContractStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model ClientContract {
+  id               Int                  @id @default(autoincrement())
+  uuid             String               @unique @default(uuid()) @map("uuid") @db.VarChar(36)
+  contractNumber   String               @map("contract_number") @db.VarChar(100)
+  clientId         Int                  @map("client_id")
+  useClientAddress Boolean              @default(true) @map("use_client_address")
+  street           String?              @map("street") @db.VarChar(255)
+  number           String?              @map("address_number") @db.VarChar(20)
+  complement       String?              @map("complement") @db.VarChar(100)
+  neighborhood     String?              @map("neighborhood") @db.VarChar(100)
+  city             String?              @map("city") @db.VarChar(100)
+  state            String?              @map("state") @db.VarChar(2)
+  zipCode          String?              @map("zip_code") @db.VarChar(8)
+  startDate        DateTime             @map("start_date")
+  endDate          DateTime?            @map("end_date")
+  status           ClientContractStatus @default(ACTIVE) @map("status")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  /// Business client (attended customer); no FK to User for now — auth is only via global JWT on HTTP routes.
+  client Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+
+  @@index([clientId])
+  @@map("client_contracts")
+}

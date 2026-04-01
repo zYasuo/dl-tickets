@@ -7,6 +7,8 @@ import { rateLimitConfig } from '../config/rate-limit.config';
 import { authConfig } from '../config/auth.config';
 import { UsersModule } from './users/users.module';
 import { TicketsModule } from './tickets/ticket.module';
+import { ClientsModule } from './clients/clients.module';
+import { ClientContractsModule } from './client-contracts/client-contracts.module';
 import { AuthModule } from './auth/auth.module';
 import { QueueModule } from './queue/queue';
 import { CacheModule } from './cache/cache.module';
@@ -25,6 +27,8 @@ import { JwtAuthGuard } from './auth/infrastructure/inbound/http/guards/jwt-auth
     UsersModule,
     AuthModule,
     TicketsModule,
+    ClientsModule,
+    ClientContractsModule,
   ],
   providers: [
     {

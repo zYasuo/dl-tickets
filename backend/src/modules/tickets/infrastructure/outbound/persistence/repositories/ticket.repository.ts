@@ -27,7 +27,7 @@ export class TicketRepository extends TicketRepositoryPort {
       userUuid,
     } = criteria;
 
-    const andParts: Prisma.TicketsWhereInput[] = [];
+    const businessFilters: Prisma.TicketsWhereInput[] = [];
 
     const createdAt: { gte?: Date; lte?: Date } = {};
     if (createdFrom) {
@@ -37,20 +37,25 @@ export class TicketRepository extends TicketRepositoryPort {
       createdAt.lte = new Date(`${createdTo}T23:59:59.999Z`);
     }
     if (Object.keys(createdAt).length > 0) {
-      andParts.push({ createdAt });
-    }
-    if (cursor) {
-      andParts.push({ uuid: { gt: cursor } });
+      businessFilters.push({ createdAt });
     }
     if (status) {
-      andParts.push({ status });
+      businessFilters.push({ status });
     }
     if (userUuid) {
-      andParts.push({ user: { uuid: userUuid } });
+      businessFilters.push({ user: { uuid: userUuid } });
     }
 
-    const where: Prisma.TicketsWhereInput =
-      andParts.length === 0 ? {} : { AND: andParts };
+    const whereForCount: Prisma.TicketsWhereInput =
+      businessFilters.length === 0 ? {} : { AND: businessFilters };
+
+    const pageFilters: Prisma.TicketsWhereInput[] = [...businessFilters];
+    if (cursor) {
+      pageFilters.push({ uuid: { gt: cursor } });
+    }
+    const whereForPage: Prisma.TicketsWhereInput =
+      pageFilters.length === 0 ? {} : { AND: pageFilters };
+
     const skip = cursor ? 0 : (page - 1) * limit;
 
     const orderBy: Prisma.TicketsOrderByWithRelationInput = {
@@ -59,13 +64,13 @@ export class TicketRepository extends TicketRepositoryPort {
 
     const [rows, total] = await Promise.all([
       this.prisma.tickets.findMany({
-        where,
+        where: whereForPage,
         orderBy,
         skip,
         take: limit,
         include: { user: { select: { uuid: true } } },
       }),
-      this.prisma.tickets.count({ where }),
+      this.prisma.tickets.count({ where: whereForCount }),
     ]);
 
     const data = rows.map((row) =>

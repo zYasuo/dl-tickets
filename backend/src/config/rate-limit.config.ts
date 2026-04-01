@@ -6,6 +6,13 @@ export type TRateLimitEndpointKey =
   | 'tickets-get-by-id'
   | 'tickets-create'
   | 'tickets-update'
+  | 'clients-create'
+  | 'clients-list'
+  | 'clients-get-by-id'
+  | 'client-contracts-create'
+  | 'client-contracts-list'
+  | 'client-contracts-get-by-id'
+  | 'client-contracts-update'
   | 'auth-login'
   | 'auth-refresh'
   | 'auth-logout'
@@ -33,6 +40,13 @@ const defaults: IRateLimitConfig = {
   'tickets-get-by-id': { max: 120, windowSeconds: 60 },
   'tickets-create': { max: 30, windowSeconds: 60 },
   'tickets-update': { max: 60, windowSeconds: 60 },
+  'clients-create': { max: 30, windowSeconds: 60 },
+  'clients-list': { max: 120, windowSeconds: 60 },
+  'clients-get-by-id': { max: 120, windowSeconds: 60 },
+  'client-contracts-create': { max: 30, windowSeconds: 60 },
+  'client-contracts-list': { max: 120, windowSeconds: 60 },
+  'client-contracts-get-by-id': { max: 120, windowSeconds: 60 },
+  'client-contracts-update': { max: 60, windowSeconds: 60 },
   'auth-login': { max: 5, windowSeconds: 900 },
   'auth-refresh': { max: 30, windowSeconds: 60 },
   'auth-logout': { max: 60, windowSeconds: 60 },
@@ -76,6 +90,67 @@ export const rateLimitConfig = registerAs(
       windowSeconds: parseIntEnv(
         'RATE_LIMIT_TICKETS_UPDATE_WINDOW_SECONDS',
         defaults['tickets-update'].windowSeconds,
+      ),
+    },
+    'clients-create': {
+      max: parseIntEnv('RATE_LIMIT_CLIENTS_CREATE_MAX', defaults['clients-create'].max),
+      windowSeconds: parseIntEnv(
+        'RATE_LIMIT_CLIENTS_CREATE_WINDOW_SECONDS',
+        defaults['clients-create'].windowSeconds,
+      ),
+    },
+    'clients-list': {
+      max: parseIntEnv('RATE_LIMIT_CLIENTS_LIST_MAX', defaults['clients-list'].max),
+      windowSeconds: parseIntEnv(
+        'RATE_LIMIT_CLIENTS_LIST_WINDOW_SECONDS',
+        defaults['clients-list'].windowSeconds,
+      ),
+    },
+    'clients-get-by-id': {
+      max: parseIntEnv('RATE_LIMIT_CLIENTS_GET_BY_ID_MAX', defaults['clients-get-by-id'].max),
+      windowSeconds: parseIntEnv(
+        'RATE_LIMIT_CLIENTS_GET_BY_ID_WINDOW_SECONDS',
+        defaults['clients-get-by-id'].windowSeconds,
+      ),
+    },
+    'client-contracts-create': {
+      max: parseIntEnv(
+        'RATE_LIMIT_CLIENT_CONTRACTS_CREATE_MAX',
+        defaults['client-contracts-create'].max,
+      ),
+      windowSeconds: parseIntEnv(
+        'RATE_LIMIT_CLIENT_CONTRACTS_CREATE_WINDOW_SECONDS',
+        defaults['client-contracts-create'].windowSeconds,
+      ),
+    },
+    'client-contracts-list': {
+      max: parseIntEnv(
+        'RATE_LIMIT_CLIENT_CONTRACTS_LIST_MAX',
+        defaults['client-contracts-list'].max,
+      ),
+      windowSeconds: parseIntEnv(
+        'RATE_LIMIT_CLIENT_CONTRACTS_LIST_WINDOW_SECONDS',
+        defaults['client-contracts-list'].windowSeconds,
+      ),
+    },
+    'client-contracts-get-by-id': {
+      max: parseIntEnv(
+        'RATE_LIMIT_CLIENT_CONTRACTS_GET_BY_ID_MAX',
+        defaults['client-contracts-get-by-id'].max,
+      ),
+      windowSeconds: parseIntEnv(
+        'RATE_LIMIT_CLIENT_CONTRACTS_GET_BY_ID_WINDOW_SECONDS',
+        defaults['client-contracts-get-by-id'].windowSeconds,
+      ),
+    },
+    'client-contracts-update': {
+      max: parseIntEnv(
+        'RATE_LIMIT_CLIENT_CONTRACTS_UPDATE_MAX',
+        defaults['client-contracts-update'].max,
+      ),
+      windowSeconds: parseIntEnv(
+        'RATE_LIMIT_CLIENT_CONTRACTS_UPDATE_WINDOW_SECONDS',
+        defaults['client-contracts-update'].windowSeconds,
       ),
     },
     'auth-login': {
