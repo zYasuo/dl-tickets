@@ -68,8 +68,7 @@ export function AppHeader() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
-                onSelect={(e) => {
-                  e.preventDefault();
+                onClick={() => {
                   void handleLogout();
                 }}
               >

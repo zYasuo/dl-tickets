@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment } from "react";
-import { LayoutDashboard, LogOut, Ticket } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
@@ -27,6 +27,7 @@ function segmentLabel(segment: string): string {
   if (segment === "dashboard") return "Visão geral";
   if (segment === "clients") return "Clientes";
   if (segment === "tickets") return "Chamados";
+  if (segment === "settings") return "Configurações";
   if (segment === "new") return "Novo";
   if (segment === "edit") return "Editar";
   if (UUID_RE.test(segment)) return "Detalhe";
@@ -120,19 +121,14 @@ export function DashboardHeader() {
               {user?.email ?? "Conta"}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/dashboard")}>
-              <LayoutDashboard className="size-4 opacity-70" />
-              Visão geral
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/dashboard/tickets")}>
-              <Ticket className="size-4 opacity-70" />
-              Chamados
+            <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
+              <Settings className="size-4 opacity-70" />
+              Configurações
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              onSelect={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 void handleLogout();
               }}
             >
