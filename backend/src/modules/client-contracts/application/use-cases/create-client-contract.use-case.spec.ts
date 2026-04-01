@@ -8,6 +8,7 @@ import type { ClientContractRepositoryPort } from '../../domain/ports/repository
 import { ClientEntity } from 'src/modules/clients/domain/entities/client.entity';
 import { Cpf } from 'src/modules/clients/domain/vo/cpf.vo';
 import { Address } from 'src/common/vo/address.vo';
+import { ValidateAddressGeoUseCase } from 'src/modules/locations/application/use-cases/validate-address-geo.use-case';
 import { CreateClientContractUseCase } from './create-client-contract.use-case';
 
 describe('CreateClientContractUseCase', () => {
@@ -20,7 +21,7 @@ describe('CreateClientContractUseCase', () => {
     id: clientId,
     name: 'C',
     cpf: Cpf.create('52998224725'),
-    address: Address.create({
+    address: Address.createLegacy({
       street: 'A',
       number: '1',
       neighborhood: 'N',
@@ -41,6 +42,10 @@ describe('CreateClientContractUseCase', () => {
         CreateClientContractUseCase,
         { provide: CLIENT_CONTRACT_REPOSITORY, useValue: contractRepo },
         { provide: CLIENT_REPOSITORY, useValue: clientRepo },
+        {
+          provide: ValidateAddressGeoUseCase,
+          useValue: { execute: jest.fn() },
+        },
       ],
     }).compile();
 

@@ -1,6 +1,5 @@
 export type ClientModalTabDef = { id: string; label: string };
 
-/** Todas as abas do modal (ordem = ordem na lista rolável + menu). */
 export const CLIENT_MODAL_TABS: ClientModalTabDef[] = [
   { id: "cliente", label: "Cliente" },
   { id: "endereco", label: "Endereço" },
@@ -23,7 +22,6 @@ export const CLIENT_MODAL_TABS: ClientModalTabDef[] = [
   { id: "obs", label: "Obs." },
 ];
 
-/** Primeiras N abas como triggers horizontais; restantes só no menu "…". */
 export const CLIENT_MODAL_INLINE_TAB_COUNT = 10;
 
 export const DEMO_LOOKUP_TIPO_CLIENTE = [

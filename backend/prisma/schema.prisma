@@ -105,6 +105,57 @@ model PasswordReset {
   @@map("password_resets")
 }
 
+model Country {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid()) @map("uuid") @db.VarChar(36)
+  name      String   @map("name") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  states State[]
+
+  @@map("countries")
+}
+
+model State {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid()) @map("uuid") @db.VarChar(36)
+  name      String   @map("name") @db.VarChar(255)
+  code      String?  @map("code") @db.VarChar(10)
+  countryId Int      @map("country_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  country Country @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  cities  City[]
+
+  clients         Client[]         @relation("ClientAddressState")
+  clientContracts ClientContract[] @relation("ContractAddressState")
+
+  @@unique([countryId, name])
+  @@unique([countryId, code])
+  @@index([countryId])
+  @@map("states")
+}
+
+model City {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid()) @map("uuid") @db.VarChar(36)
+  name      String   @map("name") @db.VarChar(255)
+  stateId   Int      @map("state_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  state State @relation(fields: [stateId], references: [id], onDelete: Restrict)
+
+  clients         Client[]         @relation("ClientAddressCity")
+  clientContracts ClientContract[] @relation("ContractAddressCity")
+
+  @@unique([stateId, name])
+  @@index([stateId])
+  @@map("cities")
+}
+
 model Client {
   id           Int      @id @default(autoincrement())
   uuid         String   @unique @default(uuid()) @map("uuid") @db.VarChar(36)
@@ -115,14 +166,21 @@ model Client {
   number       String   @map("address_number") @db.VarChar(20)
   complement   String?  @map("complement") @db.VarChar(100)
   neighborhood String   @map("neighborhood") @db.VarChar(100)
-  city         String   @map("city") @db.VarChar(100)
-  state        String   @map("state") @db.VarChar(2)
+  city         String?  @map("city") @db.VarChar(100)
+  state        String?  @map("state") @db.VarChar(10)
   zipCode      String   @map("zip_code") @db.VarChar(8)
+  stateId      Int?     @map("state_id")
+  cityId       Int?     @map("city_id")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  addressState State? @relation("ClientAddressState", fields: [stateId], references: [id], onDelete: Restrict)
+  addressCity  City?  @relation("ClientAddressCity", fields: [cityId], references: [id], onDelete: Restrict)
+
   contracts ClientContract[]
 
+  @@index([stateId])
+  @@index([cityId])
   @@map("clients")
 }
 
@@ -143,17 +201,22 @@ model ClientContract {
   complement       String?              @map("complement") @db.VarChar(100)
   neighborhood     String?              @map("neighborhood") @db.VarChar(100)
   city             String?              @map("city") @db.VarChar(100)
-  state            String?              @map("state") @db.VarChar(2)
+  state            String?              @map("state") @db.VarChar(10)
   zipCode          String?              @map("zip_code") @db.VarChar(8)
+  stateId          Int?                 @map("state_id")
+  cityId           Int?                 @map("city_id")
   startDate        DateTime             @map("start_date")
   endDate          DateTime?            @map("end_date")
   status           ClientContractStatus @default(ACTIVE) @map("status")
   createdAt        DateTime             @default(now()) @map("created_at")
   updatedAt        DateTime             @updatedAt @map("updated_at")
 
-  /// Business client (attended customer); no FK to User for now — auth is only via global JWT on HTTP routes.
-  client Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  client         Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  contractState  State? @relation("ContractAddressState", fields: [stateId], references: [id], onDelete: Restrict)
+  contractCity   City?  @relation("ContractAddressCity", fields: [cityId], references: [id], onDelete: Restrict)
 
   @@index([clientId])
+  @@index([stateId])
+  @@index([cityId])
   @@map("client_contracts")
 }

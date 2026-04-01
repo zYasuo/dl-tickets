@@ -25,7 +25,7 @@ describe('SearchClientsUseCase', () => {
       id: overrides.id ?? randomUUID(),
       name: overrides.name ?? 'Cliente',
       cpf: Cpf.create('52998224725'),
-      address: Address.create(address),
+      address: Address.createLegacy(address),
       createdAt: new Date(),
       updatedAt: new Date(),
     });

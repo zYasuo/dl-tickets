@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Inject, Injectable } from '@nes
 import { randomUUID } from 'node:crypto';
 import { DomainError } from 'src/common/errors/domain.error';
 import { Address } from 'src/common/vo/address.vo';
+import { ValidateAddressGeoUseCase } from 'src/modules/locations/application/use-cases/validate-address-geo.use-case';
 import { ClientCacheKeyBuilder } from '../cache/client-cache-key-builder';
 import { CLIENT_REPOSITORY } from '../../di.tokens';
 import type { ClientRepositoryPort } from '../../domain/ports/repository/client.repository.port';
@@ -15,6 +16,7 @@ export class CreateClientUseCase {
   constructor(
     @Inject(CLIENT_REPOSITORY) private readonly clientRepository: ClientRepositoryPort,
     private readonly clientCacheKeyBuilder: ClientCacheKeyBuilder,
+    private readonly validateAddressGeo: ValidateAddressGeoUseCase,
   ) {}
 
   async execute(input: CreateClientBody): Promise<ClientEntity> {
@@ -39,12 +41,26 @@ export class CreateClientUseCase {
     const now = new Date();
     let entity: ClientEntity;
     try {
+      const geo = await this.validateAddressGeo.execute(
+        payload.address.stateUuid,
+        payload.address.cityUuid,
+      );
+      const address = Address.createWithGeo(
+        {
+          street: payload.address.street,
+          number: payload.address.number,
+          complement: payload.address.complement,
+          neighborhood: payload.address.neighborhood,
+          zipCode: payload.address.zipCode,
+        },
+        geo,
+      );
       entity = ClientEntity.create({
         id: randomUUID(),
         name: payload.name,
         cpf,
         cnpj,
-        address: Address.create(payload.address),
+        address,
         createdAt: now,
         updatedAt: now,
       });

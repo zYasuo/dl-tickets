@@ -11,7 +11,11 @@ import {
   toPrismaCreate,
   toPrismaUpdate,
 } from '../mappers/client-contract-persistence.mapper';
-const clientInclude = { client: { select: { uuid: true } } } as const;
+const clientInclude = {
+  client: { select: { uuid: true } },
+  contractState: true,
+  contractCity: true,
+} as const;
 
 @Injectable()
 export class ClientContractRepository extends ClientContractRepositoryPort {

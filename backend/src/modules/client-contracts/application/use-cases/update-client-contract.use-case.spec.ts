@@ -7,7 +7,11 @@ import {
   ClientContractEntity,
   ClientContractStatus,
 } from '../../domain/entities/client-contract.entity';
+import { ValidateAddressGeoUseCase } from 'src/modules/locations/application/use-cases/validate-address-geo.use-case';
 import { UpdateClientContractUseCase } from './update-client-contract.use-case';
+
+const RJ_STATE = '00000000-0000-4000-8000-000000000011';
+const RIO_CITY = '00000000-0000-4000-8000-000000000022';
 
 describe('UpdateClientContractUseCase', () => {
   let useCase: UpdateClientContractUseCase;
@@ -30,6 +34,17 @@ describe('UpdateClientContractUseCase', () => {
       providers: [
         UpdateClientContractUseCase,
         { provide: CLIENT_CONTRACT_REPOSITORY, useValue: repo },
+        {
+          provide: ValidateAddressGeoUseCase,
+          useValue: {
+            execute: jest.fn().mockResolvedValue({
+              stateUuid: RJ_STATE,
+              cityUuid: RIO_CITY,
+              cityName: 'Rio de Janeiro',
+              stateCode: 'RJ',
+            }),
+          },
+        },
       ],
     }).compile();
     useCase = module.get(UpdateClientContractUseCase);
@@ -71,9 +86,9 @@ describe('UpdateClientContractUseCase', () => {
         street: 'B',
         number: '2',
         neighborhood: 'N',
-        city: 'C',
-        state: 'RJ',
         zipCode: '20000000',
+        stateUuid: RJ_STATE,
+        cityUuid: RIO_CITY,
       },
     });
 

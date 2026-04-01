@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { CreateClientBody } from "@/features/clients/actions";
+import { AddressGeoLookupBlock } from "@/features/clients/components/address-geo-lookup-block";
 import { useCreateClient } from "@/features/clients/hooks/use-create-client";
+import { DEFAULT_COUNTRY_UUID_BR } from "@/features/locations/constants";
 import {
   createClientFormSchema,
   type CreateClientFormValues,
@@ -23,9 +25,9 @@ function toCreateBody(values: CreateClientFormValues): CreateClientBody {
     street: values.address.street.trim(),
     number: values.address.number.trim(),
     neighborhood: values.address.neighborhood.trim(),
-    city: values.address.city.trim(),
-    state: values.address.state,
     zipCode: values.address.zipCode.trim(),
+    stateUuid: values.address.stateUuid.trim(),
+    cityUuid: values.address.cityUuid.trim(),
     ...(comp ? { complement: comp } : {}),
   };
 
@@ -76,9 +78,12 @@ export function ClientCreateForm() {
         number: "",
         complement: "",
         neighborhood: "",
-        city: "",
-        state: "",
         zipCode: "",
+        countryUuid: DEFAULT_COUNTRY_UUID_BR,
+        stateUuid: "",
+        cityUuid: "",
+        stateDisplay: "",
+        cityDisplay: "",
       },
     },
   });
@@ -277,8 +282,8 @@ export function ClientCreateForm() {
               Morada
             </h3>
             <p className="text-sm text-muted-foreground">
-              Rua, número, bairro, cidade, UF e CEP são obrigatórios.
-              Complemento é opcional.
+              Rua, número, bairro, estado e cidade (UUID ou UF + pesquisa) e CEP
+              são obrigatórios. Complemento é opcional.
             </p>
           </div>
 
@@ -344,38 +349,16 @@ export function ClientCreateForm() {
                 {...form.register("address.neighborhood")}
               />
             </FormField>
-            <FormField
-              label="Cidade"
-              htmlFor="addr-city"
-              required
-              error={form.formState.errors.address?.city?.message}
-              className="sm:col-span-3"
-            >
-              <Input
-                id="addr-city"
-                autoComplete="address-level2"
-                placeholder="Cidade"
-                className="h-10 w-full"
-                {...form.register("address.city")}
+            <div className="flex flex-col gap-4 py-2 sm:col-span-6 sm:py-3">
+              <AddressGeoLookupBlock<CreateClientFormValues>
+                control={form.control}
+                register={form.register}
+                setValue={form.setValue}
+                stateUuidError={form.formState.errors.address?.stateUuid?.message}
+                cityUuidError={form.formState.errors.address?.cityUuid?.message}
+                stackLabel
               />
-            </FormField>
-
-            <FormField
-              label="UF"
-              htmlFor="addr-state"
-              required
-              error={form.formState.errors.address?.state?.message}
-              className="sm:col-span-2"
-            >
-              <Input
-                id="addr-state"
-                maxLength={2}
-                autoComplete="address-level1"
-                placeholder="SC"
-                className="h-10 w-full uppercase"
-                {...form.register("address.state")}
-              />
-            </FormField>
+            </div>
             <FormField
               label="CEP"
               htmlFor="addr-zip"

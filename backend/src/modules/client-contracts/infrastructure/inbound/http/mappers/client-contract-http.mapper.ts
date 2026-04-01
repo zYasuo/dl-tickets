@@ -27,6 +27,8 @@ function addressToHttp(entity: ClientContractEntity): ClientAddressPublicHttp | 
     city: a.city,
     state: a.state,
     zipCode: a.zipCode,
+    stateUuid: a.stateUuid,
+    cityUuid: a.cityUuid,
   };
 }
 

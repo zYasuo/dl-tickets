@@ -10,8 +10,8 @@ export type ClientAddressSearchRow = {
   address_number: string;
   complement: string | null;
   neighborhood: string;
-  city: string;
-  state: string;
+  city: string | null;
+  state: string | null;
   zip_code: string;
   created_at: Date;
   updated_at: Date;
@@ -31,6 +31,8 @@ export function addressSearchRowToPrismaClient(row: ClientAddressSearchRow): Cli
     city: row.city,
     state: row.state,
     zipCode: row.zip_code,
+    stateId: null,
+    cityId: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

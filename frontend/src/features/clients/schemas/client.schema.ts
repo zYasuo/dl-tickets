@@ -5,13 +5,18 @@ export const addressFormSchema = z.object({
   number: z.string().min(1, "Número obrigatório"),
   complement: z.string().optional(),
   neighborhood: z.string().min(1, "Bairro obrigatório"),
-  city: z.string().min(1, "Cidade obrigatória"),
-  state: z
-    .string()
-    .min(2, "UF com 2 letras")
-    .max(2, "UF com 2 letras")
-    .transform((s) => s.toUpperCase()),
   zipCode: z.string().min(1, "CEP obrigatório"),
+  countryUuid: z.uuid(),
+  stateUuid: z
+    .string()
+    .min(1, "Estado obrigatório")
+    .uuid("Indique um estado válido (UUID)"),
+  cityUuid: z
+    .string()
+    .min(1, "Cidade obrigatória")
+    .uuid("Indique uma cidade válida (UUID)"),
+  stateDisplay: z.string().optional(),
+  cityDisplay: z.string().optional(),
 });
 
 export function refineClientIdentification(
@@ -71,3 +76,5 @@ export const createClientFormSchema = z
   });
 
 export type CreateClientFormValues = z.infer<typeof createClientFormSchema>;
+
+export type AddressFormValues = z.infer<typeof addressFormSchema>;

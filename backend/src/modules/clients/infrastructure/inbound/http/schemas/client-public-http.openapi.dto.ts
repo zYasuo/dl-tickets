@@ -21,6 +21,12 @@ export class ClientAddressOpenApiDto {
 
   @ApiProperty({ description: '8 digits' })
   zipCode!: string;
+
+  @ApiProperty({ format: 'uuid', nullable: true })
+  stateUuid!: string | null;
+
+  @ApiProperty({ format: 'uuid', nullable: true })
+  cityUuid!: string | null;
 }
 
 export class ClientPublicHttpOpenApiDto {

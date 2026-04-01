@@ -12,7 +12,6 @@ import { buildPaginationItems } from "@/features/tickets/lib/pagination-page-ite
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/shared/components/ui/button-variants";
-import { ErrorAlert } from "@/shared/components/error-alert";
 import { EmptyState } from "@/shared/components/empty-state";
 import { PageHeader } from "@/shared/components/page-header";
 import { Button } from "@/shared/components/ui/button";
@@ -98,7 +97,7 @@ function ClientsListCard({
     [nameFilter],
   );
 
-  const { data, isPending, isError, error } = useClientsList(
+  const { data, isPending, isError, isFetching, refetch } = useClientsList(
     page,
     DEFAULT_LIMIT,
     listOptions,
@@ -109,13 +108,15 @@ function ClientsListCard({
   const totalPages = meta?.totalPages ?? 0;
 
   const rangeLabel = useMemo(() => {
-    if (!meta || isPending) return "A carregar…";
+    if (isPending) return "A carregar…";
+    if (isError) return "Indisponível";
+    if (!meta) return "—";
     if (meta.total === 0) return "0 registos";
     if (clients.length === 0) return `Sem registos nesta página · ${meta.total.toLocaleString("pt-PT")} no total`;
     const from = (meta.page - 1) * meta.limit + 1;
     const to = from + clients.length - 1;
     return `${from.toLocaleString("pt-PT")} – ${to.toLocaleString("pt-PT")} de ${meta.total.toLocaleString("pt-PT")}`;
-  }, [meta, isPending, clients.length]);
+  }, [meta, isPending, isError, clients.length]);
 
   const openCreateModal = () => {
     setModalClientId(null);
@@ -138,10 +139,6 @@ function ClientsListCard({
         onOpenChange={setClientModalOpen}
         clientId={modalClientId}
       />
-      {isError ? (
-        <ErrorAlert title="Não foi possível carregar os clientes" error={error} />
-      ) : null}
-
       <Card
         className="gap-0 overflow-hidden border-border/80 shadow-sm ring-1 ring-foreground/6"
         size="sm"
@@ -216,6 +213,22 @@ function ClientsListCard({
           {isPending ? (
             <div className="px-4 py-6">
               <Skeleton className="h-48 w-full" />
+            </div>
+          ) : isError ? (
+            <div className="px-4 py-10">
+              <EmptyState
+                title="Não foi possível carregar"
+                description="Verifica a ligação ao servidor e tenta outra vez."
+              >
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={isFetching}
+                  onClick={() => void refetch()}
+                >
+                  {isFetching ? "A carregar…" : "Tentar novamente"}
+                </Button>
+              </EmptyState>
             </div>
           ) : clients.length === 0 ? (
             <div className="px-4 py-10">

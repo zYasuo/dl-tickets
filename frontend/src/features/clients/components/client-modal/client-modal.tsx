@@ -77,7 +77,6 @@ const PLACEHOLDER_TAB_IDS = new Set([
 type ClientModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Quando definido, modal em modo edição (detalhe carregado pela API). */
   clientId?: string | null;
   onSaved?: (client: ClientPublic) => void;
 };

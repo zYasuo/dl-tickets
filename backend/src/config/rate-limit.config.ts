@@ -13,6 +13,10 @@ import {
   type ClientsRateLimitKey,
 } from '../modules/clients/config/rate-limit.config';
 import {
+  buildLocationsRateLimitConfig,
+  type LocationsRateLimitKey,
+} from '../modules/locations/config/rate-limit.config';
+import {
   buildTicketsRateLimitConfig,
   type TicketsRateLimitKey,
 } from '../modules/tickets/config/rate-limit.config';
@@ -28,6 +32,7 @@ export type RateLimitEndpointKey =
   | TicketsRateLimitKey
   | ClientsRateLimitKey
   | ClientContractsRateLimitKey
+  | LocationsRateLimitKey
   | AuthRateLimitKey;
 
 export type RateLimitConfig = Record<RateLimitEndpointKey, RateLimitEntry>;
@@ -39,6 +44,7 @@ export const rateLimitConfig = registerAs(
     ...buildTicketsRateLimitConfig(),
     ...buildClientsRateLimitConfig(),
     ...buildClientContractsRateLimitConfig(),
+    ...buildLocationsRateLimitConfig(),
     ...buildAuthRateLimitConfig(),
   }),
 );

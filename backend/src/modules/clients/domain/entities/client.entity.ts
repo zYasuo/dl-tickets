@@ -54,17 +54,17 @@ export class ClientEntity {
     if (!input.name?.trim()) {
       throw new DomainError('Name is required');
     }
-    return new ClientEntity({
-      ...input,
-      address: Address.create({
-        street: input.address.street,
-        number: input.address.number,
-        complement: input.address.complement,
-        neighborhood: input.address.neighborhood,
-        city: input.address.city,
-        state: input.address.state,
-        zipCode: input.address.zipCode,
-      }),
-    });
+    return new ClientEntity({ ...input, address: input.address });
+  }
+
+  /** Load from DB/cache without enforcing CPF/CNPJ (legacy or partial rows). */
+  static reconstitute(input: ClientEntityProps): ClientEntity {
+    if (!input.id?.trim()) {
+      throw new DomainError('Id is required');
+    }
+    if (!input.name?.trim()) {
+      throw new DomainError('Name is required');
+    }
+    return new ClientEntity({ ...input, address: input.address });
   }
 }

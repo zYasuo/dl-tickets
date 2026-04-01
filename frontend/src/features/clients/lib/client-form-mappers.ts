@@ -1,5 +1,10 @@
 import type { ClientPublic, CreateClientBody } from "@/features/clients/actions";
 import type { ClientModalFormValues } from "@/features/clients/schemas/client-modal.schema";
+import { DEFAULT_COUNTRY_UUID_BR } from "@/features/locations/constants";
+
+function uuidFromApi(value: unknown): string {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : "";
+}
 
 export function getClientModalDefaultValues(): ClientModalFormValues {
   return {
@@ -13,9 +18,12 @@ export function getClientModalDefaultValues(): ClientModalFormValues {
       number: "",
       complement: "",
       neighborhood: "",
-      city: "",
-      state: "",
       zipCode: "",
+      countryUuid: DEFAULT_COUNTRY_UUID_BR,
+      stateUuid: "",
+      cityUuid: "",
+      stateDisplay: "",
+      cityDisplay: "",
     },
     personType: "fisica",
     icmsContributor: "contribuinte",
@@ -32,7 +40,6 @@ function stringFromDoc(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-/** API não expõe `isForeignNational`; assumimos nacional até o contrato evoluir. */
 export function clientPublicToFormValues(
   client: ClientPublic,
 ): ClientModalFormValues {
@@ -51,9 +58,12 @@ export function clientPublicToFormValues(
       number: client.address.number,
       complement: client.address.complement ?? "",
       neighborhood: client.address.neighborhood,
-      city: client.address.city,
-      state: client.address.state,
       zipCode: client.address.zipCode,
+      countryUuid: DEFAULT_COUNTRY_UUID_BR,
+      stateUuid: uuidFromApi(client.address.stateUuid),
+      cityUuid: uuidFromApi(client.address.cityUuid),
+      stateDisplay: client.address.state,
+      cityDisplay: client.address.city,
     },
     personType: "fisica",
     icmsContributor: "contribuinte",
@@ -74,9 +84,9 @@ export function clientModalValuesToCreateBody(
     street: values.address.street.trim(),
     number: values.address.number.trim(),
     neighborhood: values.address.neighborhood.trim(),
-    city: values.address.city.trim(),
-    state: values.address.state,
     zipCode: values.address.zipCode.trim(),
+    stateUuid: values.address.stateUuid.trim(),
+    cityUuid: values.address.cityUuid.trim(),
     ...(comp ? { complement: comp } : {}),
   };
 

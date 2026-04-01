@@ -3,9 +3,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { clientQueryKeys } from "@/features/clients/query-keys";
 
-/**
- * Placeholder até existir DELETE em `/api/v1/clients/{id}`.
- */
 export function useDeleteClient() {
   const queryClient = useQueryClient();
 

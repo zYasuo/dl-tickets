@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule } from 'src/modules/clients/clients.module';
+import { LocationsModule } from 'src/modules/locations/locations.module';
 import { CreateClientContractUseCase } from './application/use-cases/create-client-contract.use-case';
 import { FindAllClientContractsUseCase } from './application/use-cases/find-all-client-contracts.use-case';
 import { FindClientContractByIdUseCase } from './application/use-cases/find-client-contract-by-id.use-case';
@@ -9,7 +10,7 @@ import { ClientContractRepository } from './infrastructure/outbound/persistence/
 import { CLIENT_CONTRACT_REPOSITORY } from './di.tokens';
 
 @Module({
-  imports: [ClientsModule],
+  imports: [ClientsModule, LocationsModule],
   controllers: [ClientContractController],
   providers: [
     CreateClientContractUseCase,

@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { randomUUID } from 'node:crypto';
 import { DomainError } from 'src/common/errors/domain.error';
 import { Address } from 'src/common/vo/address.vo';
+import { ValidateAddressGeoUseCase } from 'src/modules/locations/application/use-cases/validate-address-geo.use-case';
 import { CLIENT_REPOSITORY } from 'src/modules/clients/di.tokens';
 import type { ClientRepositoryPort } from 'src/modules/clients/domain/ports/repository/client.repository.port';
 import { CLIENT_CONTRACT_REPOSITORY } from '../../di.tokens';
@@ -22,6 +23,7 @@ export class CreateClientContractUseCase {
     @Inject(CLIENT_CONTRACT_REPOSITORY)
     private readonly contractRepository: ClientContractRepositoryPort,
     @Inject(CLIENT_REPOSITORY) private readonly clientRepository: ClientRepositoryPort,
+    private readonly validateAddressGeo: ValidateAddressGeoUseCase,
   ) {}
 
   async execute(input: CreateClientContractBody): Promise<ClientContractEntity> {
@@ -33,8 +35,23 @@ export class CreateClientContractUseCase {
     const startDate = atStartOfUtcDay(input.startDate);
     const endDate = input.endDate ? atStartOfUtcDay(input.endDate) : undefined;
 
-    const address =
-      !input.useClientAddress && input.address ? Address.create(input.address) : undefined;
+    let address: Address | undefined;
+    if (!input.useClientAddress && input.address) {
+      const geo = await this.validateAddressGeo.execute(
+        input.address.stateUuid,
+        input.address.cityUuid,
+      );
+      address = Address.createWithGeo(
+        {
+          street: input.address.street,
+          number: input.address.number,
+          complement: input.address.complement,
+          neighborhood: input.address.neighborhood,
+          zipCode: input.address.zipCode,
+        },
+        geo,
+      );
+    }
 
     const now = new Date();
     let entity: ClientContractEntity;

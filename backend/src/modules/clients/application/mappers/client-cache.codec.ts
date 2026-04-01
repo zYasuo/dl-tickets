@@ -16,6 +16,8 @@ export type CachedClientDetail = {
     city: string;
     state: string;
     zipCode: string;
+    stateUuid?: string | null;
+    cityUuid?: string | null;
   };
   createdAt: string;
   updatedAt: string;
@@ -36,6 +38,8 @@ export function encodeClientDetail(entity: ClientEntity): CachedClientDetail {
       city: a.city,
       state: a.state,
       zipCode: a.zipCode,
+      ...(a.stateUuid ? { stateUuid: a.stateUuid } : {}),
+      ...(a.cityUuid ? { cityUuid: a.cityUuid } : {}),
     },
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
@@ -43,12 +47,22 @@ export function encodeClientDetail(entity: ClientEntity): CachedClientDetail {
 }
 
 export function decodeClientDetail(row: CachedClientDetail): ClientEntity {
-  return ClientEntity.create({
+  return ClientEntity.reconstitute({
     id: row.id,
     name: row.name,
     cpf: row.cpf ? Cpf.create(row.cpf) : undefined,
     cnpj: row.cnpj ? Cnpj.create(row.cnpj) : undefined,
-    address: Address.create(row.address),
+    address: Address.fromPersistence({
+      street: row.address.street,
+      number: row.address.number,
+      complement: row.address.complement,
+      neighborhood: row.address.neighborhood,
+      zipCode: row.address.zipCode,
+      city: row.address.city,
+      state: row.address.state,
+      stateUuid: row.address.stateUuid ?? null,
+      cityUuid: row.address.cityUuid ?? null,
+    }),
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
   });
@@ -67,6 +81,8 @@ function isCachedClientDetail(v: unknown): v is CachedClientDetail {
     typeof a.city === 'string' &&
     typeof a.state === 'string' &&
     typeof a.zipCode === 'string' &&
+    (a.stateUuid === undefined || a.stateUuid === null || typeof a.stateUuid === 'string') &&
+    (a.cityUuid === undefined || a.cityUuid === null || typeof a.cityUuid === 'string') &&
     typeof o.createdAt === 'string' &&
     typeof o.updatedAt === 'string'
   );

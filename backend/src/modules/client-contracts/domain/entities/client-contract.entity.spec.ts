@@ -37,7 +37,7 @@ describe('ClientContractEntity', () => {
     const e = ClientContractEntity.create({
       ...base(),
       useClientAddress: false,
-      address: Address.create({
+      address: Address.createLegacy({
         street: 'B',
         number: '2',
         neighborhood: 'N',

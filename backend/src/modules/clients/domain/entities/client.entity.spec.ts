@@ -6,11 +6,11 @@ import { Cpf } from '../vo/cpf.vo';
 import { ClientEntity } from './client.entity';
 
 const addr = () =>
-  Address.create({
+  Address.createLegacy({
     street: 'Rua 1',
     number: '10',
     neighborhood: 'Centro',
-    city: 'SP',
+    city: 'São Paulo',
     state: 'SP',
     zipCode: '01310100',
   });
@@ -52,5 +52,17 @@ describe('ClientEntity', () => {
       updatedAt: now,
     });
     expect(c.cnpj?.value).toBe('11222333000181');
+  });
+
+  it('reconstitute allows missing CPF and CNPJ', () => {
+    const c = ClientEntity.reconstitute({
+      id: randomUUID(),
+      name: 'Legado',
+      address: addr(),
+      createdAt: now,
+      updatedAt: now,
+    });
+    expect(c.cpf).toBeUndefined();
+    expect(c.cnpj).toBeUndefined();
   });
 });

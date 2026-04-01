@@ -65,25 +65,49 @@ function CommandDialog({
 
 function CommandInput({
   className,
+  variant = "default",
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Input>) {
+}: React.ComponentProps<typeof CommandPrimitive.Input> & {
+  variant?: "default" | "dialog"
+}) {
+  const isDialog = variant === "dialog";
+
   return (
-    <div data-slot="command-input-wrapper" className="p-1 pb-0">
-      <InputGroup className="h-8 rounded-lg border-input/30 bg-input/30 shadow-none *:data-[slot=input-group-addon]:pl-2">
+    <div
+      data-slot="command-input-wrapper"
+      className={cn(isDialog ? "px-0.5 pb-1 pt-0" : "p-1 pb-0")}
+    >
+      <InputGroup
+        className={cn(
+          "shadow-none focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/25",
+          isDialog
+            ? "h-12 min-h-12 rounded-xl border border-border bg-card px-0 *:data-[slot=input-group-addon]:pe-3 *:data-[slot=input-group-addon]:ps-0"
+            : "h-10 min-h-10 rounded-lg border border-input/50 bg-background *:data-[slot=input-group-addon]:ps-2 dark:border-input/40 dark:bg-input/25",
+        )}
+      >
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(
-            "w-full border-0 bg-transparent px-0 text-sm outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+            "min-w-0 flex-1 border-0 bg-transparent outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+            isDialog
+              ? "px-4 py-3 text-[0.9375rem] leading-normal font-normal tracking-normal text-foreground subpixel-antialiased placeholder:font-normal placeholder:text-muted-foreground/55 sm:text-base sm:leading-normal"
+              : "px-2 py-2 text-sm leading-5 font-normal text-foreground placeholder:text-muted-foreground/65",
             className,
           )}
           {...props}
         />
         <InputGroupAddon align="inline-end">
-          <SearchIcon className="size-4 shrink-0 opacity-50" aria-hidden />
+          <SearchIcon
+            className={cn(
+              "shrink-0 text-muted-foreground/60",
+              isDialog ? "size-5" : "size-4 opacity-50",
+            )}
+            aria-hidden
+          />
         </InputGroupAddon>
       </InputGroup>
     </div>
-  )
+  );
 }
 
 function CommandList({

@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DomainError } from 'src/common/errors/domain.error';
 import { Address } from 'src/common/vo/address.vo';
+import { ValidateAddressGeoUseCase } from 'src/modules/locations/application/use-cases/validate-address-geo.use-case';
 import { CLIENT_CONTRACT_REPOSITORY } from '../../di.tokens';
 import type { ClientContractRepositoryPort } from '../../domain/ports/repository/client-contract.repository.port';
 import {
@@ -18,6 +19,7 @@ export class UpdateClientContractUseCase {
   constructor(
     @Inject(CLIENT_CONTRACT_REPOSITORY)
     private readonly contractRepository: ClientContractRepositoryPort,
+    private readonly validateAddressGeo: ValidateAddressGeoUseCase,
   ) {}
 
   async execute(id: string, input: UpdateClientContractBody): Promise<ClientContractEntity> {
@@ -44,7 +46,20 @@ export class UpdateClientContractUseCase {
     } else {
       if (input.address) {
         try {
-          p.address = Address.create(input.address);
+          const geo = await this.validateAddressGeo.execute(
+            input.address.stateUuid,
+            input.address.cityUuid,
+          );
+          p.address = Address.createWithGeo(
+            {
+              street: input.address.street,
+              number: input.address.number,
+              complement: input.address.complement,
+              neighborhood: input.address.neighborhood,
+              zipCode: input.address.zipCode,
+            },
+            geo,
+          );
         } catch (e) {
           if (e instanceof DomainError) {
             throw new BadRequestException(e.message);

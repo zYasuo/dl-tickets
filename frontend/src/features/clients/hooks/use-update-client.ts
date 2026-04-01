@@ -5,10 +5,6 @@ import { clientQueryKeys } from "@/features/clients/query-keys";
 
 type UpdateArgs = { id: string; body: unknown };
 
-/**
- * Placeholder até existir PATCH em `/api/v1/clients/{id}`.
- * Não chamar em produção até `mutationFn` ser implementada.
- */
 export function useUpdateClient() {
   const queryClient = useQueryClient();
 

@@ -14,7 +14,7 @@ import {
 import { RequiredMark } from "./required-mark";
 
 export const clientFormRowGridClass =
-  "grid gap-3 sm:grid-cols-[minmax(11rem,15rem)_minmax(0,1fr)] sm:gap-x-6 sm:items-start";
+  "grid gap-3 sm:grid-cols-[minmax(10rem,12.5rem)_minmax(0,1fr)] sm:gap-x-4 sm:items-start";
 
 type FormFieldRowProps = {
   label: string;
@@ -60,7 +60,7 @@ export function FormFieldRow({
 
   return (
     <div className={cn(clientFormRowGridClass, className)}>
-      <div className="flex items-start gap-1.5 pt-0.5 sm:pt-2">
+      <div className="flex items-start gap-1.5 pt-0.5 sm:pt-2.5">
         <label
           htmlFor={htmlFor}
           className="text-sm font-medium leading-snug text-muted-foreground"

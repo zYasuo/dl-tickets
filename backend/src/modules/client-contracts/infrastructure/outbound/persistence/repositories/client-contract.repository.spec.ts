@@ -43,7 +43,11 @@ describe('ClientContractRepository', () => {
       status: ClientContractStatus.ACTIVE,
       createdAt: now,
       updatedAt: now,
+      stateId: null,
+      cityId: null,
       client: { uuid: clientUuid },
+      contractState: null,
+      contractCity: null,
       ...overrides,
     };
   }
@@ -87,7 +91,11 @@ describe('ClientContractRepository', () => {
     });
     expect(prisma.clientContract.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        include: { client: { select: { uuid: true } } },
+        include: {
+          client: { select: { uuid: true } },
+          contractState: true,
+          contractCity: true,
+        },
         data: expect.objectContaining({
           uuid: entity.id,
           contractNumber: 'CTR-1',
@@ -127,7 +135,11 @@ describe('ClientContractRepository', () => {
             { uuid: { gt: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' } },
           ],
         },
-        include: { client: { select: { uuid: true } } },
+        include: {
+          client: { select: { uuid: true } },
+          contractState: true,
+          contractCity: true,
+        },
       }),
     );
   });
@@ -147,7 +159,11 @@ describe('ClientContractRepository', () => {
     expect(out?.id).toBe(id);
     expect(prisma.clientContract.findUnique).toHaveBeenCalledWith({
       where: { uuid: id },
-      include: { client: { select: { uuid: true } } },
+      include: {
+        client: { select: { uuid: true } },
+        contractState: true,
+        contractCity: true,
+      },
     });
   });
 

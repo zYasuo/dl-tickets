@@ -86,7 +86,7 @@ describe('ClientController', () => {
       id,
       name: 'N',
       cpf: Cpf.create('52998224725'),
-      address: Address.create({
+      address: Address.createLegacy({
         street: 'A',
         number: '1',
         neighborhood: 'N',

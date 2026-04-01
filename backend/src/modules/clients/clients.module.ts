@@ -7,10 +7,11 @@ import { SearchClientsUseCase } from 'src/modules/clients/application/use-cases/
 import { ClientController } from 'src/modules/clients/infrastructure/inbound/http/controllers/client.controller';
 import { ClientRepository } from 'src/modules/clients/infrastructure/outbound/persistence/repositories/client.repository';
 import { CacheModule } from '../cache/cache.module';
+import { LocationsModule } from '../locations/locations.module';
 import { CLIENT_REPOSITORY } from './di.tokens';
 
 @Module({
-  imports: [CacheModule],
+  imports: [CacheModule, LocationsModule],
   controllers: [ClientController],
   providers: [
     ClientCacheKeyBuilder,

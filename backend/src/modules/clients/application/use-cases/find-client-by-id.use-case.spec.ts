@@ -44,7 +44,7 @@ describe('FindClientByIdUseCase', () => {
       id,
       name: 'X',
       cpf: Cpf.create('52998224725'),
-      address: Address.create({
+      address: Address.createLegacy({
         street: 'A',
         number: '1',
         neighborhood: 'N',
@@ -67,7 +67,7 @@ describe('FindClientByIdUseCase', () => {
       id,
       name: 'X',
       cpf: Cpf.create('52998224725'),
-      address: Address.create({
+      address: Address.createLegacy({
         street: 'A',
         number: '1',
         neighborhood: 'N',

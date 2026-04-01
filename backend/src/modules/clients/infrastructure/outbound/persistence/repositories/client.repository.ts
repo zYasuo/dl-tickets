@@ -11,7 +11,12 @@ import {
   escapeIlikePattern,
   type ClientAddressSearchRow,
 } from '../mappers/client-address-search-persistence.mapper';
-import { toDomain, toPrismaCreate } from '../mappers/client-persistence.mapper';
+import {
+  clientPersistenceInclude,
+  toDomain,
+  toDomainFromScalar,
+  toPrismaCreate,
+} from '../mappers/client-persistence.mapper';
 
 @Injectable()
 export class ClientRepository extends ClientRepositoryPort {
@@ -22,6 +27,7 @@ export class ClientRepository extends ClientRepositoryPort {
   async create(client: ClientEntity): Promise<ClientEntity> {
     const row = await this.prisma.client.create({
       data: toPrismaCreate(client),
+      include: clientPersistenceInclude,
     });
     return toDomain(row);
   }
@@ -58,6 +64,7 @@ export class ClientRepository extends ClientRepositoryPort {
         orderBy,
         skip,
         take: limit,
+        include: clientPersistenceInclude,
       }),
       this.prisma.client.count({ where: whereForCount }),
     ]);
@@ -81,25 +88,37 @@ export class ClientRepository extends ClientRepositoryPort {
   }
 
   async findById(uuid: string): Promise<ClientEntity | null> {
-    const row = await this.prisma.client.findUnique({ where: { uuid } });
+    const row = await this.prisma.client.findUnique({
+      where: { uuid },
+      include: clientPersistenceInclude,
+    });
     if (!row) return null;
     return toDomain(row);
   }
 
   async findByInternalId(id: number): Promise<ClientEntity | null> {
-    const row = await this.prisma.client.findUnique({ where: { id } });
+    const row = await this.prisma.client.findUnique({
+      where: { id },
+      include: clientPersistenceInclude,
+    });
     if (!row) return null;
     return toDomain(row);
   }
 
   async findByCpf(digits: string): Promise<ClientEntity | null> {
-    const row = await this.prisma.client.findUnique({ where: { cpf: digits } });
+    const row = await this.prisma.client.findUnique({
+      where: { cpf: digits },
+      include: clientPersistenceInclude,
+    });
     if (!row) return null;
     return toDomain(row);
   }
 
   async findByCnpj(digits: string): Promise<ClientEntity | null> {
-    const row = await this.prisma.client.findUnique({ where: { cnpj: digits } });
+    const row = await this.prisma.client.findUnique({
+      where: { cnpj: digits },
+      include: clientPersistenceInclude,
+    });
     if (!row) return null;
     return toDomain(row);
   }
@@ -133,7 +152,7 @@ export class ClientRepository extends ClientRepositoryPort {
     ]);
 
     const total = Number(countRows[0]?.count ?? 0);
-    const data = rows.map((row) => toDomain(addressSearchRowToPrismaClient(row)));
+    const data = rows.map((row) => toDomainFromScalar(addressSearchRowToPrismaClient(row)));
     const totalPages = Math.ceil(total / limit);
 
     return {

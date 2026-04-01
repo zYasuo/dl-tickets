@@ -9,6 +9,8 @@ export type ClientAddressPublicHttp = {
   city: string;
   state: string;
   zipCode: string;
+  stateUuid: string | null;
+  cityUuid: string | null;
 };
 
 export type ClientPublicHttp = {
@@ -53,6 +55,8 @@ export function toClientPublicHttp(client: ClientEntity): ClientPublicHttp {
       city: a.city,
       state: a.state,
       zipCode: a.zipCode,
+      stateUuid: a.stateUuid,
+      cityUuid: a.cityUuid,
     },
     createdAt: client.createdAt.toISOString(),
     updatedAt: client.updatedAt.toISOString(),

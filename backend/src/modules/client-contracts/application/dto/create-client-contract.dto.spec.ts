@@ -5,9 +5,9 @@ describe('SCreateClientContract', () => {
     street: 'Rua A',
     number: '1',
     neighborhood: 'Centro',
-    city: 'São Paulo',
-    state: 'SP',
     zipCode: '01310100',
+    stateUuid: '00000000-0000-4000-8000-000000000010',
+    cityUuid: '00000000-0000-4000-8000-000000000020',
   };
 
   it('requires address when useClientAddress false', () => {

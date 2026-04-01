@@ -43,7 +43,7 @@ export function ClientModalShell({
           "flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:rounded-xl",
           expanded
             ? "h-[90dvh] w-[min(96vw,1400px)] max-w-[min(96vw,1400px)]"
-            : "w-[min(96vw,1200px)] max-w-[min(96vw,1200px)]",
+            : "w-[min(98vw,1320px)] max-w-[min(98vw,1320px)]",
         )}
         aria-describedby={undefined}
       >

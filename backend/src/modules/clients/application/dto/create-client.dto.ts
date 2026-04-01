@@ -6,9 +6,9 @@ export const SAddressBody = z.object({
   number: z.string().min(1, 'Number is required'),
   complement: z.string().optional(),
   neighborhood: z.string().min(1, 'Neighborhood is required'),
-  city: z.string().min(1, 'City is required'),
-  state: z.string().length(2, 'State must be UF (2 letters)'),
   zipCode: z.string().min(1, 'ZIP code is required'),
+  stateUuid: z.uuid('stateUuid must be a valid UUID'),
+  cityUuid: z.uuid('cityUuid must be a valid UUID'),
 });
 
 export const SCreateClient = z
