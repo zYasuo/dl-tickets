@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, PlusIcon } from "lucide-react";
@@ -32,9 +32,9 @@ import {
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
+  PaginationLinkButton,
+  PaginationNextButton,
+  PaginationPreviousButton,
 } from "@/shared/components/ui/pagination";
 import {
   Card,
@@ -92,16 +92,22 @@ export function TicketsList() {
     listOptions,
   );
 
-  const handleSort = (by: TicketListSortBy, order: TicketListSortOrder) => {
-    setSortBy(by);
-    setSortOrder(order);
-    setPage(1);
-  };
+  const handleSort = useCallback(
+    (by: TicketListSortBy, order: TicketListSortOrder) => {
+      setSortBy(by);
+      setSortOrder(order);
+      setPage(1);
+    },
+    [],
+  );
 
-  const handleStatusFilter = (s: TicketListStatusFilter | undefined) => {
-    setStatusFilter(s);
-    setPage(1);
-  };
+  const handleStatusFilter = useCallback(
+    (s: TicketListStatusFilter | undefined) => {
+      setStatusFilter(s);
+      setPage(1);
+    },
+    [],
+  );
 
   if (isPending) {
     return (
@@ -299,12 +305,12 @@ export function TicketsList() {
           <Pagination className="mx-0 w-full justify-center sm:w-auto sm:justify-end">
             <PaginationContent className="flex-wrap justify-center">
               <PaginationItem>
-                <PaginationPrevious
-                  href="#"
+                <PaginationPreviousButton
                   text="Anterior"
-                  className={cn(!meta.hasPreviousPage && "pointer-events-none opacity-40")}
-                  onClick={(e) => {
-                    e.preventDefault();
+                  aria-label="Página anterior"
+                  disabled={!meta.hasPreviousPage}
+                  className={cn(!meta.hasPreviousPage && "opacity-40")}
+                  onClick={() => {
                     if (meta.hasPreviousPage) setPage((p) => Math.max(1, p - 1));
                   }}
                 />
@@ -316,26 +322,23 @@ export function TicketsList() {
                   </PaginationItem>
                 ) : (
                   <PaginationItem key={item}>
-                    <PaginationLink
-                      href="#"
+                    <PaginationLinkButton
                       isActive={item === meta.page}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setPage(item);
-                      }}
+                      aria-label={`Ir para a página ${item}`}
+                      onClick={() => setPage(item)}
                     >
                       {item}
-                    </PaginationLink>
+                    </PaginationLinkButton>
                   </PaginationItem>
                 ),
               )}
               <PaginationItem>
-                <PaginationNext
-                  href="#"
+                <PaginationNextButton
                   text="Seguinte"
-                  className={cn(!meta.hasNextPage && "pointer-events-none opacity-40")}
-                  onClick={(e) => {
-                    e.preventDefault();
+                  aria-label="Página seguinte"
+                  disabled={!meta.hasNextPage}
+                  className={cn(!meta.hasNextPage && "opacity-40")}
+                  onClick={() => {
                     if (meta.hasNextPage) setPage((p) => p + 1);
                   }}
                 />

@@ -1,15 +1,69 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useDashboardBusinessStats } from "@/features/dashboard/hooks/use-dashboard-business-stats";
-import { DashboardActivityRadials } from "@/features/dashboard/components/dashboard-activity-radials";
+import {
+  DashboardChartSlotSkeleton,
+  DashboardRecentSlotSkeleton,
+} from "@/features/dashboard/components/dashboard-chart-slot-skeleton";
 import { DashboardClientSearch } from "@/features/dashboard/components/dashboard-client-search";
-import { DashboardClientsLineChart } from "@/features/dashboard/components/dashboard-clients-line-chart";
-import { DashboardContractsDonutChart } from "@/features/dashboard/components/dashboard-contracts-donut-chart";
-import { DashboardContractsHorizontalBarChart } from "@/features/dashboard/components/dashboard-contracts-horizontal-bar-chart";
-import { DashboardContractsMonthlyLineChart } from "@/features/dashboard/components/dashboard-contracts-monthly-line-chart";
 import { DashboardKpiCards } from "@/features/dashboard/components/dashboard-kpi-cards";
-import { DashboardRecentClients } from "@/features/dashboard/components/dashboard-recent-clients";
-import { DashboardRecentContracts } from "@/features/dashboard/components/dashboard-recent-contracts";
+
+const DashboardContractsDonutChart = dynamic(
+  () =>
+    import("@/features/dashboard/components/dashboard-contracts-donut-chart").then(
+      (m) => ({ default: m.DashboardContractsDonutChart }),
+    ),
+  { loading: () => <DashboardChartSlotSkeleton /> },
+);
+
+const DashboardContractsHorizontalBarChart = dynamic(
+  () =>
+    import(
+      "@/features/dashboard/components/dashboard-contracts-horizontal-bar-chart"
+    ).then((m) => ({ default: m.DashboardContractsHorizontalBarChart })),
+  { loading: () => <DashboardChartSlotSkeleton /> },
+);
+
+const DashboardActivityRadials = dynamic(
+  () =>
+    import("@/features/dashboard/components/dashboard-activity-radials").then(
+      (m) => ({ default: m.DashboardActivityRadials }),
+    ),
+  { loading: () => <DashboardChartSlotSkeleton /> },
+);
+
+const DashboardClientsLineChart = dynamic(
+  () =>
+    import("@/features/dashboard/components/dashboard-clients-line-chart").then(
+      (m) => ({ default: m.DashboardClientsLineChart }),
+    ),
+  { loading: () => <DashboardChartSlotSkeleton /> },
+);
+
+const DashboardContractsMonthlyLineChart = dynamic(
+  () =>
+    import(
+      "@/features/dashboard/components/dashboard-contracts-monthly-line-chart"
+    ).then((m) => ({ default: m.DashboardContractsMonthlyLineChart })),
+  { loading: () => <DashboardChartSlotSkeleton /> },
+);
+
+const DashboardRecentClients = dynamic(
+  () =>
+    import("@/features/dashboard/components/dashboard-recent-clients").then(
+      (m) => ({ default: m.DashboardRecentClients }),
+    ),
+  { loading: () => <DashboardRecentSlotSkeleton /> },
+);
+
+const DashboardRecentContracts = dynamic(
+  () =>
+    import("@/features/dashboard/components/dashboard-recent-contracts").then(
+      (m) => ({ default: m.DashboardRecentContracts }),
+    ),
+  { loading: () => <DashboardRecentSlotSkeleton /> },
+);
 
 export function DashboardOverview() {
   const {

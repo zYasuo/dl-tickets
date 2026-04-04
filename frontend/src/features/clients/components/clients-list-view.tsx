@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
@@ -33,7 +34,6 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { ClientModal } from "@/features/clients/components/client-modal/client-modal";
 import {
   Table,
   TableBody,
@@ -46,6 +46,14 @@ import {
 const DEFAULT_LIMIT = 10;
 const SEARCH_DEBOUNCE_MS = 300;
 const API_DISABLED_TITLE = "Indisponível — API em evolução";
+
+const ClientModalLazy = dynamic(
+  () =>
+    import("@/features/clients/components/client-modal/client-modal").then(
+      (m) => ({ default: m.ClientModal }),
+    ),
+  { ssr: false },
+);
 
 type ClientsListCardProps = {
   searchInput: string;
@@ -82,6 +90,7 @@ function ClientsListCard({
   const [clientModalOpen, setClientModalOpen] = useState(false);
   const [modalClientId, setModalClientId] = useState<string | null>(null);
   const [clientModalSession, setClientModalSession] = useState(0);
+  const [clientModalMounted, setClientModalMounted] = useState(false);
 
   const updatePage = (next: number | ((p: number) => number)) => {
     setSelectedId(null);
@@ -119,12 +128,14 @@ function ClientsListCard({
   }, [meta, isPending, isError, clients.length]);
 
   const openCreateModal = () => {
+    setClientModalMounted(true);
     setModalClientId(null);
     setClientModalSession((s) => s + 1);
     setClientModalOpen(true);
   };
 
   const openEditModal = (id: string) => {
+    setClientModalMounted(true);
     setSelectedId(id);
     setModalClientId(id);
     setClientModalSession((s) => s + 1);
@@ -133,12 +144,14 @@ function ClientsListCard({
 
   return (
     <>
-      <ClientModal
-        key={clientModalSession}
-        open={clientModalOpen}
-        onOpenChange={setClientModalOpen}
-        clientId={modalClientId}
-      />
+      {clientModalMounted ? (
+        <ClientModalLazy
+          key={clientModalSession}
+          open={clientModalOpen}
+          onOpenChange={setClientModalOpen}
+          clientId={modalClientId}
+        />
+      ) : null}
       <Card
         className="gap-0 overflow-hidden border-border/80 shadow-sm ring-1 ring-foreground/6"
         size="sm"

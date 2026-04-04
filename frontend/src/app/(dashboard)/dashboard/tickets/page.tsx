@@ -1,4 +1,13 @@
-import { TicketsList } from "@/features/tickets/components/tickets-list";
+import dynamic from "next/dynamic";
+import { TicketsListLoading } from "@/features/tickets/components/tickets-list-loading";
+
+const TicketsList = dynamic(
+  () =>
+    import("@/features/tickets/components/tickets-list").then((m) => ({
+      default: m.TicketsList,
+    })),
+  { loading: () => <TicketsListLoading /> },
+);
 
 export default function TicketsPage() {
   return (

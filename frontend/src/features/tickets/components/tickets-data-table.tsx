@@ -13,7 +13,9 @@ import {
   getCoreRowModel,
   useReactTable,
   type ColumnDef,
+  type RowData,
 } from "@tanstack/react-table";
+import { toast } from "sonner";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -61,6 +63,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface TableMeta<TData extends RowData> {
+    expandedTicketId: string | null;
+  }
+}
+
+function expandedTicketPanelDomId(ticketId: string): string {
+  return `ticket-expanded-${ticketId}`;
+}
 
 type TicketStatus = TicketPublic["status"];
 
@@ -189,8 +202,9 @@ export function TicketsDataTable({
             Código
           </span>
         ),
-        cell: ({ row }) => {
-          const open = expandedTicketId === row.original.id;
+        cell: ({ row, table }) => {
+          const open =
+            table.options.meta?.expandedTicketId === row.original.id;
           return (
             <span className="inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground tabular-nums">
               <ChevronRightIcon
@@ -335,7 +349,6 @@ export function TicketsDataTable({
       onSort,
       onStatusFilter,
       onRowOpenTicket,
-      expandedTicketId,
     ],
   );
 
@@ -345,6 +358,8 @@ export function TicketsDataTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.id,
+    meta: { expandedTicketId },
     state: {
       sorting: sortingState,
     },
@@ -354,7 +369,6 @@ export function TicketsDataTable({
   return (
     <div
       className={cn(
-        "overflow-x-auto",
         embedded
           ? "rounded-none border-0 shadow-none"
           : "rounded-lg border border-border shadow-sm",
@@ -384,7 +398,18 @@ export function TicketsDataTable({
                   <TableRow
                     data-state={row.getIsSelected() && "selected"}
                     tabIndex={0}
+                    role="button"
                     aria-expanded={isExpanded}
+                    aria-controls={
+                      isExpanded
+                        ? expandedTicketPanelDomId(ticket.id)
+                        : undefined
+                    }
+                    aria-label={
+                      isExpanded
+                        ? `Recolher detalhes do chamado ${ticketCode(ticket.id)}`
+                        : `Expandir detalhes do chamado ${ticketCode(ticket.id)}`
+                    }
                     className={cn(
                       "cursor-pointer border-border/60 transition-colors hover:bg-muted/40",
                       isExpanded && "bg-muted/30 hover:bg-muted/35",
@@ -458,6 +483,7 @@ function ExpandedTicketPanel({
 
   return (
     <div
+      id={expandedTicketPanelDomId(ticket.id)}
       className="animate-in fade-in-0 border-t border-border bg-card duration-150"
       role="region"
       aria-label={`Detalhes: ${ticket.title}`}
@@ -725,9 +751,18 @@ function RowActionsMenu({
         </DropdownMenuItem>
         <DropdownMenuItem
           className="gap-2"
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            void navigator.clipboard?.writeText(ticket.id);
+            try {
+              if (!navigator.clipboard?.writeText) {
+                toast.error("Cópia não disponível neste navegador.");
+                return;
+              }
+              await navigator.clipboard.writeText(ticket.id);
+              toast.success("ID copiado.");
+            } catch {
+              toast.error("Não foi possível copiar o ID.");
+            }
           }}
         >
           <CopyIcon className="size-4 shrink-0 opacity-70" />
@@ -735,9 +770,18 @@ function RowActionsMenu({
         </DropdownMenuItem>
         <DropdownMenuItem
           className="gap-2"
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            void navigator.clipboard?.writeText(ticketCode(ticket.id));
+            try {
+              if (!navigator.clipboard?.writeText) {
+                toast.error("Cópia não disponível neste navegador.");
+                return;
+              }
+              await navigator.clipboard.writeText(ticketCode(ticket.id));
+              toast.success("Código copiado.");
+            } catch {
+              toast.error("Não foi possível copiar o código.");
+            }
           }}
         >
           <HashIcon className="size-4 shrink-0 opacity-70" />
