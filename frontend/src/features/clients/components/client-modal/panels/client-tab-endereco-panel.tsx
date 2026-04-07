@@ -97,6 +97,7 @@ export function ClientTabEnderecoPanel() {
               control={control}
               register={register}
               setValue={setValue}
+              countryUuidError={errors.address?.countryUuid?.message}
               stateUuidError={errors.address?.stateUuid?.message}
               cityUuidError={errors.address?.cityUuid?.message}
             />

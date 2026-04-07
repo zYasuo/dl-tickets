@@ -308,6 +308,7 @@ export function ClientCreateForm() {
                 control={form.control}
                 register={form.register}
                 setValue={form.setValue}
+                countryUuidError={form.formState.errors.address?.countryUuid?.message}
                 stateUuidError={form.formState.errors.address?.stateUuid?.message}
                 cityUuidError={form.formState.errors.address?.cityUuid?.message}
                 stackLabel

@@ -110,12 +110,15 @@ Public API responses use **uuid** strings as resource ids (users, tickets, clien
 npm install
 ```
 
-Set environment variables (see `.env.example`): at minimum `DATABASE_URL`, **`JWT_SECRET`**, Redis settings (`REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, etc.), optional `JWT_ACCESS_EXPIRATION_SECONDS` / `JWT_REFRESH_EXPIRATION_DAYS`. For real emails in production, set **`RESEND_API_KEY`** (and preferably **`EMAIL_FROM`** or **`RESEND_FROM_EMAIL`** for your domain). Then run migrations:
+Set environment variables (see `.env.example`): at minimum `DATABASE_URL`, **`JWT_SECRET`**, Redis settings (`REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, etc.), optional `JWT_ACCESS_EXPIRATION_SECONDS` / `JWT_REFRESH_EXPIRATION_DAYS`. For real emails in production, set **`RESEND_API_KEY`** (and preferably **`EMAIL_FROM`** or **`RESEND_FROM_EMAIL`** for your domain). Then run migrations and seed geography (or your own import pipeline):
 
 ```bash
 npx prisma migrate dev
+npm run prisma:seed
 npm run start:dev
 ```
+
+**`npm run prisma:seed`** loads minimal `countries` / `states` / `cities` for development. The default seed uses **stable UUIDs only for local DX**; swap for bulk imports when you own the dataset. CI or integration tests that hit the DB should run the same migrate + seed (or equivalent) so location endpoints and client address flows have rows to resolve.
 
 API prefix: **`/api/v1`** (e.g. `POST /api/v1/auth/login`, `GET /api/v1/tickets` or `GET /api/v1/clients` with Bearer token).
 

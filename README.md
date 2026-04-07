@@ -41,8 +41,11 @@ Minimum backend variables are documented in [backend/README.md](backend/README.m
 cd backend
 npm install
 npx prisma migrate dev
+npm run prisma:seed
 npm run start:dev
 ```
+
+After migrations, run **`npm run prisma:seed`** (or `npx prisma db seed`) so **geography** exists (`countries`, `states`, `cities`). Without it, authenticated calls such as `GET /api/v1/states?countryUuid=…` can fail and the client address form cannot load states. The bundled seed uses **fixed UUIDs for local development only**; replace or extend this with your own data load when you move to production data.
 
 The API defaults to **http://localhost:3000** with the **`/api/v1`** prefix. Examples:
 

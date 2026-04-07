@@ -75,6 +75,8 @@
       "numberRequired": "Número obrigatório",
       "neighborhoodRequired": "Bairro obrigatório",
       "zipRequired": "CEP obrigatório",
+      "countryRequired": "País obrigatório",
+      "countryUuidInvalid": "Selecione um país válido",
       "stateRequired": "Estado obrigatório",
       "stateUuidInvalid": "Selecione um estado válido",
       "cityRequired": "Cidade obrigatória",

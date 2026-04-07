@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import {
@@ -10,9 +11,32 @@ import {
   AListCountries,
   AListStates,
 } from "@/features/locations/actions";
+import { sortCountriesByName } from "@/features/locations/lib/geography-helpers";
 import { locationQueryKeys } from "@/features/locations/query-keys";
 
 const STALE_MS = 5 * 60 * 1000;
+
+/** Picks a stable country UUID from GET /countries for list screens (states/cities admin). */
+export function useCountrySelectionForLists() {
+  const countriesQuery = useCountriesQuery();
+  const countries = useMemo(
+    () => sortCountriesByName(countriesQuery.data ?? []),
+    [countriesQuery.data],
+  );
+  const [countryUuid, setCountryUuid] = useState("");
+
+  useEffect(() => {
+    if (countries.length === 0) return;
+    queueMicrotask(() => {
+      setCountryUuid((prev) => {
+        if (prev && countries.some((c) => c.id === prev)) return prev;
+        return countries[0]?.id ?? "";
+      });
+    });
+  }, [countries]);
+
+  return { countriesQuery, countries, countryUuid, setCountryUuid };
+}
 
 export function useCountriesQuery() {
   return useQuery({

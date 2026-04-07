@@ -37,6 +37,7 @@ const runIntegration = process.env.RUN_INTEGRATION_TESTS === '1';
     }
     const cwd = join(__dirname, '..');
     execSync('npx prisma migrate deploy', { cwd, stdio: 'inherit', env: process.env });
+    execSync('npx prisma db seed', { cwd, stdio: 'inherit', env: process.env });
   });
 
   beforeEach(async () => {

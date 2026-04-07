@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
+/** Dev-only geography; fixed UUIDs are convenient for local seeds and tests — replace with your import when you own production data. */
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {

@@ -15,6 +15,8 @@ export function useBuildSCreateClientFormParams(): BuildSCreateClientFormParams 
         numberRequired: tc("numberRequired"),
         neighborhoodRequired: tc("neighborhoodRequired"),
         zipRequired: tc("zipRequired"),
+        countryRequired: tc("countryRequired"),
+        countryUuidInvalid: tc("countryUuidInvalid"),
         stateRequired: tc("stateRequired"),
         stateUuidInvalid: tc("stateUuidInvalid"),
         cityRequired: tc("cityRequired"),

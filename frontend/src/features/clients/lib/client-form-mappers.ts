@@ -1,7 +1,6 @@
 import type { ClientPublic, CreateClientBody } from "@/features/clients/actions";
 import type { ClientModalBody } from "@/features/clients/schemas/client-modal.schema";
 import type { CreateClientFormBody } from "@/features/clients/schemas/client.schema";
-import { DEFAULT_COUNTRY_UUID_BR } from "@/features/locations/constants";
 
 function uuidFromApi(value: unknown): string {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : "";
@@ -20,7 +19,7 @@ export function getCreateClientFormDefaultValues(): CreateClientFormBody {
       complement: "",
       neighborhood: "",
       zipCode: "",
-      countryUuid: DEFAULT_COUNTRY_UUID_BR,
+      countryUuid: "",
       stateUuid: "",
       cityUuid: "",
       stateDisplay: "",
@@ -66,7 +65,7 @@ export function clientPublicToFormValues(
       complement: client.address.complement ?? "",
       neighborhood: client.address.neighborhood,
       zipCode: client.address.zipCode,
-      countryUuid: DEFAULT_COUNTRY_UUID_BR,
+      countryUuid: "",
       stateUuid: uuidFromApi(client.address.stateUuid),
       cityUuid: uuidFromApi(client.address.cityUuid),
       stateDisplay: client.address.state,

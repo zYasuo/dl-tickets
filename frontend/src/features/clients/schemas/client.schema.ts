@@ -5,6 +5,8 @@ export type BuildSAddressBodyParams = {
   numberRequired: string;
   neighborhoodRequired: string;
   zipRequired: string;
+  countryRequired: string;
+  countryUuidInvalid: string;
   stateRequired: string;
   stateUuidInvalid: string;
   cityRequired: string;
@@ -18,15 +20,18 @@ export function buildSAddressBody(params: BuildSAddressBodyParams) {
     complement: z.string().optional(),
     neighborhood: z.string().min(1, params.neighborhoodRequired),
     zipCode: z.string().min(1, params.zipRequired),
-    countryUuid: z.uuid(),
+    countryUuid: z
+      .string()
+      .min(1, params.countryRequired)
+      .pipe(z.uuid({ message: params.countryUuidInvalid })),
     stateUuid: z
       .string()
       .min(1, params.stateRequired)
-      .uuid(params.stateUuidInvalid),
+      .pipe(z.uuid({ message: params.stateUuidInvalid })),
     cityUuid: z
       .string()
       .min(1, params.cityRequired)
-      .uuid(params.cityUuidInvalid),
+      .pipe(z.uuid({ message: params.cityUuidInvalid })),
     stateDisplay: z.string().optional(),
     cityDisplay: z.string().optional(),
   });

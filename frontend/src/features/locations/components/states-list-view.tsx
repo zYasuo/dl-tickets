@@ -1,9 +1,16 @@
 "use client";
 
-import { useStatesQuery } from "@/features/locations/hooks/use-locations";
-import { DEFAULT_COUNTRY_UUID_BR } from "@/features/locations/constants";
+import { useStatesQuery, useCountrySelectionForLists } from "@/features/locations/hooks/use-locations";
 import { PageHeader } from "@/shared/components/page-header";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Table,
@@ -21,14 +28,56 @@ function stateCodeLabel(code: unknown): string {
 }
 
 export function StatesListView() {
-  const query = useStatesQuery(DEFAULT_COUNTRY_UUID_BR);
+  const { countriesQuery, countries, countryUuid, setCountryUuid } =
+    useCountrySelectionForLists();
+  const query = useStatesQuery(countryUuid.trim() || undefined);
+
+  const countrySelectItems = Object.fromEntries(
+    countries.map((c) => [c.id, c.name] as const),
+  );
 
   return (
     <div className="flex w-full flex-col gap-5 px-3 py-4 sm:gap-6 sm:px-4 md:px-5">
       <PageHeader title="Estados" />
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-foreground">País</span>
+        {countriesQuery.isPending ? (
+          <Skeleton className="h-10 w-full max-w-md" />
+        ) : countriesQuery.isError ? (
+          <p className="text-sm text-destructive">
+            Não foi possível carregar os países.
+          </p>
+        ) : countries.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum país cadastrado.</p>
+        ) : (
+          <Select
+            items={countrySelectItems}
+            value={countryUuid}
+            onValueChange={(v) => setCountryUuid(v ?? "")}
+            modal={false}
+          >
+            <SelectTrigger className="h-10 w-full max-w-md" size="default">
+              <SelectValue placeholder="País" />
+            </SelectTrigger>
+            <SelectContent side="bottom" align="start">
+              <SelectGroup>
+                {countries.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        )}
+      </div>
       <Card className="border-border/80 shadow-sm">
         <CardContent className="p-0">
-          {query.isPending ? (
+          {!countryUuid.trim() ? (
+            <p className="p-4 text-sm text-muted-foreground">
+              Seleccione um país para listar os estados.
+            </p>
+          ) : query.isPending ? (
             <div className="space-y-2 p-4">
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
