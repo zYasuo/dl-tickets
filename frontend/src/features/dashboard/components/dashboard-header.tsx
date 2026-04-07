@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Fragment } from "react";
 import { LogOut, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/components/auth-provider";
+import { ApiError } from "@/lib/api/api-error";
+import { formatApiErrorForUser } from "@/lib/api/format-api-error-for-user";
 import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
 import {
   DropdownMenu,
@@ -23,17 +26,6 @@ import { cn } from "@/lib/utils";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function segmentLabel(segment: string): string {
-  if (segment === "dashboard") return "Visão geral";
-  if (segment === "clients") return "Clientes";
-  if (segment === "tickets") return "Chamados";
-  if (segment === "settings") return "Configurações";
-  if (segment === "new") return "Novo";
-  if (segment === "edit") return "Editar";
-  if (UUID_RE.test(segment)) return "Detalhe";
-  return segment;
-}
-
 function hrefForSegments(endIndex: number, segments: string[]): string {
   return `/${segments.slice(0, endIndex + 1).join("/")}`;
 }
@@ -50,28 +42,42 @@ export function DashboardHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const t = useTranslations("dashboard");
+  const tCrumb = useTranslations("dashboard.breadcrumbs");
+  const tApi = useTranslations("errors.api");
   const segments = pathname.split("/").filter(Boolean);
 
+  function segmentLabel(segment: string): string {
+    if (segment === "dashboard") return tCrumb("overview");
+    if (segment === "clients") return tCrumb("clients");
+    if (segment === "tickets") return tCrumb("tickets");
+    if (segment === "settings") return tCrumb("settings");
+    if (segment === "new") return tCrumb("new");
+    if (segment === "edit") return tCrumb("edit");
+    if (UUID_RE.test(segment)) return tCrumb("detail");
+    return segment;
+  }
+
   async function handleLogout() {
-    try {
-      await logout();
-      toast.success("Sessão terminada");
+    const result = await logout();
+    if (result.ok) {
+      toast.success(t("sessionEnded"));
       router.replace("/login");
-    } catch {
-      toast.error("Não foi possível sair. Tenta novamente.");
+    } else {
+      toast.error(formatApiErrorForUser(ApiError.fromFields(result), tApi));
     }
   }
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-card/60 px-3 backdrop-blur-sm sm:px-4 md:px-5">
-      <SidebarTrigger className="-ml-1 shrink-0" aria-label="Abrir ou fechar menu lateral" />
+      <SidebarTrigger className="-ml-1 shrink-0" aria-label={t("openSidebar")} />
       <Separator orientation="vertical" className="mr-2 h-14 shrink-0" />
       <nav
-        aria-label="Localização"
+        aria-label={t("breadcrumbNavLabel")}
         className="flex min-w-0 flex-1 items-center gap-1.5 text-sm"
       >
         <Link href="/dashboard" className={crumbLinkClass}>
-          Início
+          {t("home")}
         </Link>
         {segments.map((seg, i) => {
           const isLast = i === segments.length - 1;
@@ -107,7 +113,7 @@ export function DashboardHeader() {
             "shrink-0 rounded-full outline-none",
             "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           )}
-          aria-label="Menu da conta"
+          aria-label={t("accountMenu")}
         >
           <Avatar className="size-9">
             <AvatarFallback className="bg-primary text-sm font-medium text-primary-foreground">
@@ -118,12 +124,12 @@ export function DashboardHeader() {
         <DropdownMenuContent align="end" className="min-w-56">
           <DropdownMenuGroup>
             <DropdownMenuLabel className="max-w-56 truncate font-normal text-muted-foreground">
-              {user?.email ?? "Conta"}
+              {user?.email ?? t("accountFallback")}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
               <Settings className="size-4 opacity-70" />
-              Configurações
+              {t("settings")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -133,7 +139,7 @@ export function DashboardHeader() {
               }}
             >
               <LogOut className="size-4" />
-              Sair
+              {t("logout")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>

@@ -6,7 +6,7 @@ import {
 } from '../errors/application';
 import { DomainError } from '../errors/domain.error';
 import { ConcurrencyError } from '../errors/concurrency.error';
-import { AUTH_API_ERROR_CODES } from 'src/modules/auth/application/errors';
+import { AUTH_API_ERROR_CODES } from 'src/modules/auth/application/auth-api-error-codes';
 import { HttpExceptionFilter } from './http-exception.filter';
 
 describe('HttpExceptionFilter', () => {

@@ -2,16 +2,18 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { MailCheck } from "lucide-react";
 import { ARequestPasswordReset } from "@/features/auth/actions";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { AuthSubmitButton } from "@/features/auth/components/auth-submit-button";
 import {
-  SForgotPassword,
-  type ForgotPasswordFormValues,
+  buildSRequestPasswordReset,
+  type RequestPasswordResetBody,
 } from "@/features/auth/schemas/forgot-password.schema";
+import { ApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
 import { ErrorAlert } from "@/shared/components/error-alert";
 import { FormField } from "@/shared/components/form-field";
@@ -26,8 +28,19 @@ export function ForgotPasswordForm() {
   const [phase, setPhase] = useState<"form" | "success">("form");
   const [submitError, setSubmitError] = useState<unknown>(null);
 
-  const form = useForm<ForgotPasswordFormValues>({
-    resolver: zodResolver(SForgotPassword),
+  const t = useTranslations("auth.forgotPassword");
+  const tVal = useTranslations("validation");
+
+  const schema = useMemo(
+    () =>
+      buildSRequestPasswordReset({
+        emailInvalid: tVal("emailInvalid"),
+      }),
+    [tVal],
+  );
+
+  const form = useForm<RequestPasswordResetBody>({
+    resolver: zodResolver(schema),
     defaultValues: { email: "" },
   });
 
@@ -37,10 +50,11 @@ export function ForgotPasswordForm() {
         header={
           <div className="flex flex-col items-center gap-3 text-center">
             <MailCheck className="size-10 text-primary" aria-hidden />
-            <CardTitle className="text-xl font-semibold">Email enviado</CardTitle>
+            <CardTitle className="text-xl font-semibold">
+              {t("successTitle")}
+            </CardTitle>
             <CardDescription className="text-center">
-              Se existir uma conta com esse email, receberás instruções para
-              redefinir a password.
+              {t("successDescription")}
             </CardDescription>
           </div>
         }
@@ -49,7 +63,7 @@ export function ForgotPasswordForm() {
             href="/login"
             className={cn(buttonVariants({ className: "w-full" }))}
           >
-            Voltar ao login
+            {t("backToLogin")}
           </Link>
         }
       />
@@ -61,10 +75,10 @@ export function ForgotPasswordForm() {
       header={
         <>
           <CardTitle className="text-xl font-semibold">
-            Recuperar password
+            {t("title")}
           </CardTitle>
           <CardDescription>
-            Indica o teu email e enviamos instruções de recuperação
+            {t("description")}
           </CardDescription>
         </>
       }
@@ -75,7 +89,7 @@ export function ForgotPasswordForm() {
             buttonVariants({ variant: "link", className: "h-auto p-0" }),
           )}
         >
-          Voltar ao login
+          {t("backToLogin")}
         </Link>
       }
     >
@@ -84,8 +98,12 @@ export function ForgotPasswordForm() {
         onSubmit={form.handleSubmit(async (values) => {
           setSubmitError(null);
           try {
-            await ARequestPasswordReset(values.email);
-            setPhase("success");
+            const result = await ARequestPasswordReset(values.email);
+            if (result.ok) {
+              setPhase("success");
+              return;
+            }
+            setSubmitError(ApiError.fromFields(result));
           } catch (e) {
             setSubmitError(e);
           }
@@ -94,7 +112,7 @@ export function ForgotPasswordForm() {
         {submitError ? <ErrorAlert error={submitError} /> : null}
 
         <FormField
-          label="Email"
+          label={t("emailLabel")}
           htmlFor="email"
           required
           error={form.formState.errors.email?.message}
@@ -110,8 +128,8 @@ export function ForgotPasswordForm() {
 
         <AuthSubmitButton
           pending={form.formState.isSubmitting}
-          idleLabel="Enviar"
-          pendingLabel="A enviar…"
+          idleLabel={t("submit")}
+          pendingLabel={t("submitting")}
         />
       </form>
     </AuthCard>

@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 type AuthScreenHeaderProps = {
   title: string;
   description: ReactNode;
-  /** Optional icon or badge above the title (e.g. verify step). */
   adornment?: ReactNode;
 };
 

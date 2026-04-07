@@ -1,8 +1,15 @@
 import { z } from "zod";
 
-export const SLogin = z.object({
-  email: z.email("Invalid email"),
-  password: z.string().min(1, "Password is required"),
-});
+export type BuildSLoginParams = {
+  emailInvalid: string;
+  passwordRequired: string;
+};
 
-export type LoginFormValues = z.infer<typeof SLogin>;
+export function buildSLogin(params: BuildSLoginParams) {
+  return z.object({
+    email: z.email(params.emailInvalid),
+    password: z.string().min(1, params.passwordRequired),
+  });
+}
+
+export type LoginBody = z.infer<ReturnType<typeof buildSLogin>>;

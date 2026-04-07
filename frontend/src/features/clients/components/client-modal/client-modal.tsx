@@ -2,10 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { toast } from "sonner";
 
+import { formatApiErrorForUser } from "@/lib/api/format-api-error-for-user";
 import type { ClientPublic } from "@/features/clients/actions";
 import { ClientModalShell } from "@/features/clients/components/client-modal/client-modal-shell";
 import {
@@ -16,14 +18,15 @@ import { ClientTabClientePanel } from "@/features/clients/components/client-moda
 import { useCreateClient } from "@/features/clients/hooks/use-create-client";
 import { useClientDetail } from "@/features/clients/hooks/use-client-detail";
 import { useDeleteClient } from "@/features/clients/hooks/use-delete-client";
+import { useBuildSClientModalParams } from "@/features/clients/hooks/use-client-validation-messages";
 import {
-  clientModalValuesToCreateBody,
+  clientFormToCreateBody,
   clientPublicToFormValues,
   getClientModalDefaultValues,
 } from "@/features/clients/lib/client-form-mappers";
 import {
-  clientModalFormSchema,
-  type ClientModalFormValues,
+  buildSClientModal,
+  type ClientModalBody,
 } from "@/features/clients/schemas/client-modal.schema";
 import { ErrorAlert } from "@/shared/components/error-alert";
 import { Button } from "@/shared/components/ui/button";
@@ -96,9 +99,17 @@ export function ClientModal({
   const detailQuery = useClientDetail(clientId ?? "", open && !!clientId);
   const createMutation = useCreateClient();
   const deleteMutation = useDeleteClient();
+  const tClients = useTranslations("clients");
+  const tApi = useTranslations("errors.api");
 
-  const form = useForm<ClientModalFormValues>({
-    resolver: zodResolver(clientModalFormSchema),
+  const modalParams = useBuildSClientModalParams();
+  const clientModalSchema = useMemo(
+    () => buildSClientModal(modalParams),
+    [modalParams],
+  );
+
+  const form = useForm<ClientModalBody>({
+    resolver: zodResolver(clientModalSchema),
     defaultValues: getClientModalDefaultValues(),
     shouldUnregister: false,
     mode: "onTouched",
@@ -155,30 +166,30 @@ export function ClientModal({
   const handleNew = useCallback(() => {
     form.reset(getClientModalDefaultValues());
     setActiveTab("cliente");
-    toast.message("Novo rascunho — preencha os dados do cliente.");
-  }, [form]);
+    toast.message(tClients("newDraftToast"));
+  }, [form, tClients]);
 
   const handleSave = form.handleSubmit(
     (values) => {
       if (mode === "edit") {
-        toast.error("Guardar edição indisponível — API em evolução.");
+        toast.error(tClients("editUnavailableToast"));
         return;
       }
-      const body = clientModalValuesToCreateBody(values);
+      const body = clientFormToCreateBody(values);
       createMutation.mutate(body, {
         onSuccess: (client) => {
-          toast.success("Cliente criado");
+          toast.success(tClients("createdToast"));
           form.reset(clientPublicToFormValues(client));
           onSaved?.(client);
           tryCloseParent();
         },
         onError: (e) => {
-          toast.error(e instanceof Error ? e.message : "Erro ao criar cliente");
+          toast.error(formatApiErrorForUser(e, tApi));
         },
       });
     },
     () => {
-      toast.message("Corrija os campos destacados antes de salvar.");
+      toast.message(tClients("fixFieldsToast"));
     },
   );
 
@@ -190,11 +201,11 @@ export function ClientModal({
     if (!clientId) return;
     deleteMutation.mutate(clientId, {
       onError: (e) => {
-        toast.error(e instanceof Error ? e.message : "Não foi possível eliminar");
+        toast.error(formatApiErrorForUser(e, tApi));
       },
       onSettled: () => setDeleteOpen(false),
     });
-  }, [clientId, deleteMutation]);
+  }, [clientId, deleteMutation, tApi]);
 
   const editBlocked = mode === "edit";
   const showDetailLoader =

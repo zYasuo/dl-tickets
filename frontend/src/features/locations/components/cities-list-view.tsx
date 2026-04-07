@@ -40,9 +40,11 @@ export function CitiesListView() {
 
   useEffect(() => {
     if (states.length === 0) return;
-    setStateUuid((prev) => {
-      if (prev && states.some((s) => s.id === prev)) return prev;
-      return states[0]?.id ?? "";
+    queueMicrotask(() => {
+      setStateUuid((prev) => {
+        if (prev && states.some((s) => s.id === prev)) return prev;
+        return states[0]?.id ?? "";
+      });
     });
   }, [states]);
 

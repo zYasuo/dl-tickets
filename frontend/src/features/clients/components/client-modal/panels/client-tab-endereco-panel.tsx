@@ -4,7 +4,7 @@ import { useFormContext } from "react-hook-form";
 
 import { AddressGeoLookupBlock } from "@/features/clients/components/address-geo-lookup-block";
 import { FormFieldRow } from "@/features/clients/components/client-modal/form";
-import type { ClientModalFormValues } from "@/features/clients/schemas/client-modal.schema";
+import type { ClientModalBody } from "@/features/clients/schemas/client-modal.schema";
 import { cn } from "@/lib/utils";
 import { Input } from "@/shared/components/ui/input";
 import { TabsContent } from "@/shared/components/ui/tabs";
@@ -19,7 +19,7 @@ export function ClientTabEnderecoPanel() {
     control,
     setValue,
     formState: { errors },
-  } = useFormContext<ClientModalFormValues>();
+  } = useFormContext<ClientModalBody>();
 
   return (
     <TabsContent
@@ -93,7 +93,7 @@ export function ClientTabEnderecoPanel() {
           </FormFieldRow>
 
           <div className="my-1 sm:my-2">
-            <AddressGeoLookupBlock<ClientModalFormValues>
+            <AddressGeoLookupBlock<ClientModalBody>
               control={control}
               register={register}
               setValue={setValue}

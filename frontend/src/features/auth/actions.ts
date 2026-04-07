@@ -1,7 +1,7 @@
 "use server";
 
-import type { components } from "@/lib/api/v1";
 import { ApiError } from "@/lib/api/api-error";
+import { CLIENT_UI_ERROR_CODES } from "@/lib/api/api-error-codes";
 import {
   ACCESS_TOKEN_COOKIE,
   authUserFromAccessToken,
@@ -11,11 +11,37 @@ import {
   setAccessTokenFromJwt,
   tryRefreshSession,
 } from "@/lib/api/backend-request";
-import type { AuthUser } from "@/features/auth/types";
+import type {
+  AuthUser,
+  AuthActionFailure,
+  AuthMessageActionResult,
+  LoginActionResult,
+  LogoutActionResult,
+  RegisterActionResult,
+} from "@/features/auth/types";
+import type { components } from "@/lib/api/v1";
 import { cookies } from "next/headers";
 
-export type RegisterBody = components["schemas"]["CreateUserBodyDto"];
-export type UserPublic = components["schemas"]["UserPublicHttpOpenApiDto"];
+function authFailureFromResponse(
+  data: unknown,
+  statusCode: number,
+): AuthActionFailure {
+  if (ApiError.isStandardError(data)) {
+    const m = data.message;
+    return {
+      ok: false,
+      statusCode: data.statusCode,
+      code: data.code,
+      message: typeof m === "string" ? m : m.join("\n"),
+    };
+  }
+  return {
+    ok: false,
+    statusCode,
+    code: CLIENT_UI_ERROR_CODES.REQUEST_FAILED,
+    message: "Invalid request or server unavailable.",
+  };
+}
 
 export async function ALoadSession(): Promise<{ user: AuthUser | null }> {
   const store = await cookies();
@@ -35,14 +61,14 @@ export async function ALoadSession(): Promise<{ user: AuthUser | null }> {
 export async function ALogin(
   email: string,
   password: string,
-): Promise<{ user: AuthUser }> {
+): Promise<LoginActionResult> {
   const res = await backendRequest("/api/v1/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
   await forwardSetCookiesFromBackend(res);
   const envelope = data as {
@@ -50,17 +76,23 @@ export async function ALogin(
     data?: { accessToken?: string };
   };
   if (envelope?.success !== true || !envelope.data?.accessToken) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
   await setAccessTokenFromJwt(envelope.data.accessToken);
   const user = authUserFromAccessToken(envelope.data.accessToken);
   if (!user) {
-    throw new Error("Invalid access token");
+    return {
+      ok: false,
+      statusCode: 500,
+      code: CLIENT_UI_ERROR_CODES.INVALID_ACCESS_TOKEN,
+      message: "Invalid access token",
+    };
   }
-  return { user };
+  return { ok: true, user };
 }
 
-export async function ALogout(): Promise<void> {
+export async function ALogout(): Promise<LogoutActionResult> {
+  let failure: AuthActionFailure | null = null;
   try {
     const res = await backendRequest("/api/v1/auth/logout", {
       method: "POST",
@@ -69,116 +101,118 @@ export async function ALogout(): Promise<void> {
     await forwardSetCookiesFromBackend(res).catch(() => {});
     const data: unknown = await res.json().catch(() => null);
     if (!res.ok) {
-      throw ApiError.fromUnknown(data, res.status);
+      failure = authFailureFromResponse(data, res.status);
     }
   } finally {
     await clearAuthCookies();
   }
+  if (failure) return failure;
+  return { ok: true };
 }
 
 export async function ARegisterUser(
-  body: RegisterBody,
-): Promise<UserPublic> {
+  body: components["schemas"]["CreateUserBodyDto"],
+): Promise<RegisterActionResult> {
   const res = await backendRequest("/api/v1/users", {
     method: "POST",
     body: JSON.stringify(body),
   });
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
   const envelope = data as {
     success?: boolean;
-    data?: UserPublic;
+    data?: components["schemas"]["UserPublicHttpOpenApiDto"];
   };
   if (envelope?.success !== true || !envelope.data) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
-  return envelope.data;
+  return { ok: true, user: envelope.data };
 }
 
 export async function ARequestPasswordReset(
   email: string,
-): Promise<string> {
+): Promise<AuthMessageActionResult> {
   const res = await backendRequest("/api/v1/auth/password-reset/request", {
     method: "POST",
     body: JSON.stringify({ email }),
   });
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
   const envelope = data as {
     success?: boolean;
     data?: { message?: string };
   };
   if (envelope?.success !== true || !envelope.data?.message) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
-  return envelope.data.message;
+  return { ok: true, message: envelope.data.message };
 }
 
 export async function AConfirmPasswordReset(
   token: string,
   newPassword: string,
-): Promise<string> {
+): Promise<AuthMessageActionResult> {
   const res = await backendRequest("/api/v1/auth/password-reset/confirm", {
     method: "POST",
     body: JSON.stringify({ token, newPassword }),
   });
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
   const envelope = data as {
     success?: boolean;
     data?: { message?: string };
   };
   if (envelope?.success !== true || !envelope.data?.message) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
-  return envelope.data.message;
+  return { ok: true, message: envelope.data.message };
 }
 
 export async function AVerifyEmail(
   email: string,
   code: string,
-): Promise<string> {
+): Promise<AuthMessageActionResult> {
   const res = await backendRequest("/api/v1/auth/email/verify", {
     method: "POST",
     body: JSON.stringify({ email, code }),
   });
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
   const envelope = data as {
     success?: boolean;
     data?: { message?: string };
   };
   if (envelope?.success !== true || !envelope.data?.message) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
-  return envelope.data.message;
+  return { ok: true, message: envelope.data.message };
 }
 
 export async function AResendEmailVerification(
   email: string,
-): Promise<string> {
+): Promise<AuthMessageActionResult> {
   const res = await backendRequest("/api/v1/auth/email/resend", {
     method: "POST",
     body: JSON.stringify({ email }),
   });
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
   const envelope = data as {
     success?: boolean;
     data?: { message?: string };
   };
   if (envelope?.success !== true || !envelope.data?.message) {
-    throw ApiError.fromUnknown(data, res.status);
+    return authFailureFromResponse(data, res.status);
   }
-  return envelope.data.message;
+  return { ok: true, message: envelope.data.message };
 }

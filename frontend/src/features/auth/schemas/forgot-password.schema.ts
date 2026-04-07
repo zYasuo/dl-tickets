@@ -1,7 +1,15 @@
 import { z } from "zod";
 
-export const SForgotPassword = z.object({
-  email: z.email("Invalid email"),
-});
+export type BuildSRequestPasswordResetParams = {
+  emailInvalid: string;
+};
 
-export type ForgotPasswordFormValues = z.infer<typeof SForgotPassword>;
+export function buildSRequestPasswordReset(params: BuildSRequestPasswordResetParams) {
+  return z.object({
+    email: z.email(params.emailInvalid),
+  });
+}
+
+export type RequestPasswordResetBody = z.infer<
+  ReturnType<typeof buildSRequestPasswordReset>
+>;

@@ -1,8 +1,6 @@
-export const AuthApiErrorCodes = {
-  INVALID_CREDENTIALS: "AUTH_INVALID_CREDENTIALS",
-  EMAIL_NOT_VERIFIED: "AUTH_EMAIL_NOT_VERIFIED",
-  ACCOUNT_LOCKED: "AUTH_ACCOUNT_LOCKED",
-  INVALID_REFRESH_TOKEN: "AUTH_INVALID_REFRESH_TOKEN",
-  VERIFICATION_FAILED: "AUTH_VERIFICATION_FAILED",
-  INVALID_RESET_TOKEN: "AUTH_INVALID_RESET_TOKEN",
-} as const;
+import { AUTH_API_ERROR_CODES } from "@/lib/api/api-error-codes";
+
+export type { AuthApiErrorCode } from "@/lib/api/api-error-codes";
+export { AUTH_API_ERROR_CODES };
+
+export const AuthApiErrorCodes = AUTH_API_ERROR_CODES;

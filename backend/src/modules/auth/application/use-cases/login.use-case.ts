@@ -15,7 +15,7 @@ import type {
   SessionTokens,
 } from '../../domain/ports/security/session-token-issuer.port';
 import { ApplicationException } from 'src/common/errors/application';
-import { AUTH_API_ERROR_CODES } from '../errors';
+import { AUTH_API_ERROR_CODES } from '../auth-api-error-codes';
 
 const DUMMY_HASH =
   '$argon2id$v=19$m=19456,t=2,p=4$JMdI74dxqkC6ES1zzlG+rQ$O2PXX5Ze/TEmBGUuBZn5rpPghLhuoDNZXurwGg+CtGU';

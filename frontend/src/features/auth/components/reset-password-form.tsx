@@ -3,16 +3,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ShieldCheck } from "lucide-react";
 import { AConfirmPasswordReset } from "@/features/auth/actions";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { AuthSubmitButton } from "@/features/auth/components/auth-submit-button";
 import {
-  SResetPassword,
-  type ResetPasswordFormValues,
+  buildSResetPasswordForm,
+  type ResetPasswordFormBody,
 } from "@/features/auth/schemas/reset-password.schema";
+import { ApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
 import { ErrorAlert } from "@/shared/components/error-alert";
 import { FormField } from "@/shared/components/form-field";
@@ -30,8 +32,21 @@ export function ResetPasswordForm() {
   const [phase, setPhase] = useState<"form" | "success">("form");
   const [submitError, setSubmitError] = useState<unknown>(null);
 
-  const form = useForm<ResetPasswordFormValues>({
-    resolver: zodResolver(SResetPassword),
+  const t = useTranslations("auth.resetPassword");
+  const tVal = useTranslations("validation");
+
+  const schema = useMemo(
+    () =>
+      buildSResetPasswordForm({
+        tokenRequired: tVal("tokenRequired"),
+        passwordMin: tVal("passwordMin"),
+        passwordsMismatch: tVal("passwordsMismatch"),
+      }),
+    [tVal],
+  );
+
+  const form = useForm<ResetPasswordFormBody>({
+    resolver: zodResolver(schema),
     defaultValues: {
       token: tokenFromUrl,
       newPassword: "",
@@ -48,10 +63,10 @@ export function ResetPasswordForm() {
           <div className="flex flex-col items-center gap-3 text-center">
             <ShieldCheck className="size-10 text-primary" aria-hidden />
             <CardTitle className="text-xl font-semibold">
-              Password atualizada
+              {t("successTitle")}
             </CardTitle>
             <CardDescription className="text-center">
-              Podes agora entrar com a tua nova password.
+              {t("successDescription")}
             </CardDescription>
           </div>
         }
@@ -60,7 +75,7 @@ export function ResetPasswordForm() {
             href="/login"
             className={cn(buttonVariants({ className: "w-full" }))}
           >
-            Ir para o login
+            {t("goToLogin")}
           </Link>
         }
       />
@@ -71,8 +86,8 @@ export function ResetPasswordForm() {
     <AuthCard
       header={
         <>
-          <CardTitle className="text-xl font-semibold">Nova password</CardTitle>
-          <CardDescription>Define a tua nova password</CardDescription>
+          <CardTitle className="text-xl font-semibold">{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </>
       }
       footer={
@@ -82,7 +97,7 @@ export function ResetPasswordForm() {
             buttonVariants({ variant: "link", className: "h-auto p-0" }),
           )}
         >
-          Voltar ao login
+          {t("backToLogin")}
         </Link>
       }
     >
@@ -91,8 +106,15 @@ export function ResetPasswordForm() {
         onSubmit={form.handleSubmit(async (values) => {
           setSubmitError(null);
           try {
-            await AConfirmPasswordReset(values.token, values.newPassword);
-            setPhase("success");
+            const result = await AConfirmPasswordReset(
+              values.token,
+              values.newPassword,
+            );
+            if (result.ok) {
+              setPhase("success");
+              return;
+            }
+            setSubmitError(ApiError.fromFields(result));
           } catch (e) {
             setSubmitError(e);
           }
@@ -102,14 +124,14 @@ export function ResetPasswordForm() {
 
         {showTokenField ? (
           <FormField
-            label="Token"
+            label={t("tokenLabel")}
             htmlFor="token"
             required
             error={form.formState.errors.token?.message}
           >
             <Input
               id="token"
-              placeholder="Cola o token recebido por email"
+              placeholder={t("tokenPlaceholder")}
               autoComplete="off"
               autoFocus
               {...form.register("token")}
@@ -124,7 +146,7 @@ export function ResetPasswordForm() {
         )}
 
         <FormField
-          label="Nova password"
+          label={t("newPasswordLabel")}
           htmlFor="newPassword"
           required
           error={form.formState.errors.newPassword?.message}
@@ -137,12 +159,12 @@ export function ResetPasswordForm() {
             {...form.register("newPassword")}
           />
           <p className="mt-1 text-xs text-muted-foreground">
-            Mínimo 8 caracteres
+            {t("newPasswordHint")}
           </p>
         </FormField>
 
         <FormField
-          label="Confirmar password"
+          label={t("confirmPasswordLabel")}
           htmlFor="confirmPassword"
           required
           error={form.formState.errors.confirmPassword?.message}
@@ -157,8 +179,8 @@ export function ResetPasswordForm() {
 
         <AuthSubmitButton
           pending={form.formState.isSubmitting}
-          idleLabel="Alterar password"
-          pendingLabel="A atualizar…"
+          idleLabel={t("submit")}
+          pendingLabel={t("submitting")}
         />
       </form>
     </AuthCard>

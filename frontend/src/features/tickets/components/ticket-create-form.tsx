@@ -2,11 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useCreateTicket } from "@/features/tickets/hooks/use-create-ticket";
 import {
-  createTicketFormSchema,
-  type CreateTicketFormValues,
+  buildSCreateTicket,
+  type CreateTicketFormBody,
 } from "@/features/tickets/schemas/ticket.schema";
 import { ErrorAlert } from "@/shared/components/error-alert";
 import { FormField } from "@/shared/components/form-field";
@@ -34,9 +36,20 @@ export function TicketCreateForm({
 }: TicketCreateFormProps) {
   const router = useRouter();
   const mutation = useCreateTicket();
+  const tVal = useTranslations("validation");
 
-  const form = useForm<CreateTicketFormValues>({
-    resolver: zodResolver(createTicketFormSchema),
+  const ticketSchema = useMemo(
+    () =>
+      buildSCreateTicket({
+        titleRequired: tVal("ticketTitleRequired"),
+        descriptionRequired: tVal("ticketDescriptionRequired"),
+        descriptionMax: tVal("ticketDescriptionMax"),
+      }),
+    [tVal],
+  );
+
+  const form = useForm<CreateTicketFormBody>({
+    resolver: zodResolver(ticketSchema),
     defaultValues: {
       title: "",
       description: "",

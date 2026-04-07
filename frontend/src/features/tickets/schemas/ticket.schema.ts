@@ -1,25 +1,39 @@
 import { z } from "zod";
 
-export const ticketStatusSchema = z.enum(["OPEN", "IN_PROGRESS", "DONE"]);
+export const STicketStatus = z.enum(["OPEN", "IN_PROGRESS", "DONE"]);
 
-export const createTicketFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z
-    .string()
-    .min(1, "Description is required")
-    .max(255, "Description: max 255 characters"),
-});
+export type BuildSCreateTicketParams = {
+  titleRequired: string;
+  descriptionRequired: string;
+  descriptionMax: string;
+};
 
-export type CreateTicketFormValues = z.infer<typeof createTicketFormSchema>;
+export function buildSCreateTicket(params: BuildSCreateTicketParams) {
+  return z.object({
+    title: z.string().min(1, params.titleRequired),
+    description: z
+      .string()
+      .min(1, params.descriptionRequired)
+      .max(255, params.descriptionMax),
+  });
+}
 
-export const updateTicketFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z
-    .string()
-    .min(1, "Description is required")
-    .max(255, "Description: max 255 characters"),
-  status: ticketStatusSchema,
-  updatedAt: z.string().min(1, "updatedAt is required"),
-});
+export type CreateTicketFormBody = z.infer<ReturnType<typeof buildSCreateTicket>>;
 
-export type UpdateTicketFormValues = z.infer<typeof updateTicketFormSchema>;
+export type BuildSUpdateTicketParams = BuildSCreateTicketParams & {
+  updatedAtRequired: string;
+};
+
+export function buildSUpdateTicket(params: BuildSUpdateTicketParams) {
+  return z.object({
+    title: z.string().min(1, params.titleRequired),
+    description: z
+      .string()
+      .min(1, params.descriptionRequired)
+      .max(255, params.descriptionMax),
+    status: STicketStatus,
+    updatedAt: z.string().min(1, params.updatedAtRequired),
+  });
+}
+
+export type UpdateTicketFormBody = z.infer<ReturnType<typeof buildSUpdateTicket>>;

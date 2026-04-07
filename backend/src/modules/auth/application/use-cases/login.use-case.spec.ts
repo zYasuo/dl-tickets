@@ -5,7 +5,7 @@ import type { UserRepositoryPort } from 'src/modules/users/domain/ports/reposito
 import type { UserCredentialRepositoryPort } from 'src/modules/users/domain/ports/repository/user-credential.repository.port';
 import type { PasswordHasherPort } from 'src/modules/users/domain/ports/security/password-hasher.port';
 import type { SessionTokenIssuerPort } from '../../domain/ports/security/session-token-issuer.port';
-import { AUTH_API_ERROR_CODES } from '../errors';
+import { AUTH_API_ERROR_CODES } from '../auth-api-error-codes';
 import { LoginUseCase } from './login.use-case';
 
 describe('LoginUseCase', () => {

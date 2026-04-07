@@ -87,6 +87,7 @@ flowchart LR
 ## Further reading
 
 - **Authentication, HTTP routes, UUIDs, rate limits** — [backend/README.md](backend/README.md) (*Authentication*, *Rotas HTTP*, *Identifiers*, *Getting started*).
+- **Error responses** (envelope JSON, optional stable **`code`**, módulo `application/errors/`) — [backend/README.md](backend/README.md) (*API errors*).
 - **OpenAPI / generated types** (`openapi:pull`, `openapi:generate`) — [frontend/README.md](frontend/README.md).
 - **Load testing (k6)** — [backend/README.md](backend/README.md) (*Load testing*).
 

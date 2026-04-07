@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ChevronRight, LogOut, Ticket, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/components/auth-provider";
+import { ApiError } from "@/lib/api/api-error";
+import { formatApiErrorForUser } from "@/lib/api/format-api-error-for-user";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -25,15 +28,6 @@ import {
   useSidebar,
 } from "@/shared/components/ui/sidebar";
 
-const nav = [
-  {
-    title: "Chamados",
-    href: "/dashboard/tickets",
-    icon: Ticket,
-    match: (path: string) => path.startsWith("/dashboard/tickets"),
-  },
-] as const;
-
 function isClienteGeoPath(path: string) {
   return (
     path.startsWith("/dashboard/clients/cidades") ||
@@ -48,7 +42,18 @@ function isClienteMainPath(path: string) {
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations("dashboard");
+  const tApi = useTranslations("errors.api");
   const { logout } = useAuth();
+
+  const nav = [
+    {
+      title: t("tickets"),
+      href: "/dashboard/tickets",
+      icon: Ticket,
+      match: (path: string) => path.startsWith("/dashboard/tickets"),
+    },
+  ] as const;
   const { isMobile, setOpenMobile } = useSidebar();
   const prevPathRef = useRef(pathname);
   const [clienteMenuOpen, setClienteMenuOpen] = useState(() =>
@@ -62,7 +67,11 @@ export function AppSidebar() {
     prevPathRef.current = pathname;
     const wasOutside = !prev.startsWith("/dashboard/clients");
     const nowInside = pathname.startsWith("/dashboard/clients");
-    if (wasOutside && nowInside) setClienteMenuOpen(true);
+    if (wasOutside && nowInside) {
+      queueMicrotask(() => {
+        setClienteMenuOpen(true);
+      });
+    }
   }, [pathname]);
 
   function closeMobileIfNeeded() {
@@ -70,12 +79,12 @@ export function AppSidebar() {
   }
 
   async function handleLogout() {
-    try {
-      await logout();
-      toast.success("Sessão terminada");
+    const result = await logout();
+    if (result.ok) {
+      toast.success(t("sessionEnded"));
       router.replace("/login");
-    } catch {
-      toast.error("Não foi possível sair. Tente novamente.");
+    } else {
+      toast.error(formatApiErrorForUser(ApiError.fromFields(result), tApi));
     }
   }
 
@@ -90,7 +99,7 @@ export function AppSidebar() {
                 <Link
                   href="/dashboard"
                   onClick={closeMobileIfNeeded}
-                  aria-label="Ir para o painel"
+                  aria-label={t("goToDashboard")}
                 />
               }
             >
@@ -98,9 +107,9 @@ export function AppSidebar() {
                 <Ticket className="size-4" aria-hidden />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">DL System</span>
+                <span className="truncate font-semibold">{t("brand")}</span>
                 <span className="truncate text-xs text-sidebar-foreground/70">
-                  Painel
+                  {t("panelSubtitle")}
                 </span>
               </div>
             </SidebarMenuButton>
@@ -109,7 +118,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navegação</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("navigation")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -117,12 +126,12 @@ export function AppSidebar() {
                   type="button"
                   onClick={() => setClienteMenuOpen((o) => !o)}
                   isActive={clienteSectionActive}
-                  tooltip="Cliente"
+                  tooltip={t("client")}
                   className="w-full"
                   aria-expanded={clienteMenuOpen}
                 >
                   <Users className="size-4" aria-hidden />
-                  <span>Cliente</span>
+                  <span>{t("client")}</span>
                   <ChevronRight
                     className={cn(
                       "ms-auto size-4 shrink-0 transition-transform duration-200",
@@ -143,7 +152,7 @@ export function AppSidebar() {
                           />
                         }
                       >
-                        <span>Cliente</span>
+                        <span>{t("client")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
@@ -158,7 +167,7 @@ export function AppSidebar() {
                           />
                         }
                       >
-                        <span>Cidade</span>
+                        <span>{t("city")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
@@ -173,7 +182,7 @@ export function AppSidebar() {
                           />
                         }
                       >
-                        <span>Estado</span>
+                        <span>{t("state")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
@@ -206,7 +215,7 @@ export function AppSidebar() {
               onClick={() => void handleLogout()}
             >
               <LogOut className="size-4" aria-hidden />
-              <span>Sair</span>
+              <span>{t("logout")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

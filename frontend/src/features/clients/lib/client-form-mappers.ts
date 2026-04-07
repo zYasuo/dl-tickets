@@ -1,12 +1,13 @@
 import type { ClientPublic, CreateClientBody } from "@/features/clients/actions";
-import type { ClientModalFormValues } from "@/features/clients/schemas/client-modal.schema";
+import type { ClientModalBody } from "@/features/clients/schemas/client-modal.schema";
+import type { CreateClientFormBody } from "@/features/clients/schemas/client.schema";
 import { DEFAULT_COUNTRY_UUID_BR } from "@/features/locations/constants";
 
 function uuidFromApi(value: unknown): string {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : "";
 }
 
-export function getClientModalDefaultValues(): ClientModalFormValues {
+export function getCreateClientFormDefaultValues(): CreateClientFormBody {
   return {
     foreignNational: false,
     documentKind: "cpf",
@@ -25,6 +26,12 @@ export function getClientModalDefaultValues(): ClientModalFormValues {
       stateDisplay: "",
       cityDisplay: "",
     },
+  };
+}
+
+export function getClientModalDefaultValues(): ClientModalBody {
+  return {
+    ...getCreateClientFormDefaultValues(),
     personType: "fisica",
     icmsContributor: "contribuinte",
     active: true,
@@ -42,7 +49,7 @@ function stringFromDoc(value: unknown): string {
 
 export function clientPublicToFormValues(
   client: ClientPublic,
-): ClientModalFormValues {
+): ClientModalBody {
   const cpf = stringFromDoc(client.cpf as unknown);
   const cnpj = stringFromDoc(client.cnpj as unknown);
   const hasCpf = cpf.trim().length > 0;
@@ -76,8 +83,8 @@ export function clientPublicToFormValues(
   };
 }
 
-export function clientModalValuesToCreateBody(
-  values: ClientModalFormValues,
+export function clientFormToCreateBody(
+  values: CreateClientFormBody,
 ): CreateClientBody {
   const comp = values.address.complement?.trim();
   const address = {

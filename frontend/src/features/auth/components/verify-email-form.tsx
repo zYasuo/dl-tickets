@@ -3,9 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { Mail } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
@@ -16,9 +17,11 @@ import { AuthCard } from "@/features/auth/components/auth-card";
 import { AuthScreenHeader } from "@/features/auth/components/auth-screen-header";
 import { AuthSubmitButton } from "@/features/auth/components/auth-submit-button";
 import {
-  SVerifyEmail,
-  type VerifyEmailFormValues,
+  buildSVerifyEmail,
+  type VerifyEmailBody,
 } from "@/features/auth/schemas/verify-email.schema";
+import { ApiError } from "@/lib/api/api-error";
+import { formatApiErrorForUser } from "@/lib/api/format-api-error-for-user";
 import { cn } from "@/lib/utils";
 import { ErrorAlert } from "@/shared/components/error-alert";
 import { FormField } from "@/shared/components/form-field";
@@ -39,8 +42,21 @@ export function VerifyEmailForm() {
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [resendPending, setResendPending] = useState(false);
 
-  const form = useForm<VerifyEmailFormValues>({
-    resolver: zodResolver(SVerifyEmail),
+  const t = useTranslations("auth.verifyEmail");
+  const tVal = useTranslations("validation");
+  const tApi = useTranslations("errors.api");
+
+  const verifySchema = useMemo(
+    () =>
+      buildSVerifyEmail({
+        emailInvalid: tVal("emailInvalid"),
+        verifyCodeDigits: tVal("verifyCodeDigits"),
+      }),
+    [tVal],
+  );
+
+  const form = useForm<VerifyEmailBody>({
+    resolver: zodResolver(verifySchema),
     defaultValues: { email: emailParam, code: "" },
   });
 
@@ -55,8 +71,8 @@ export function VerifyEmailForm() {
       <AuthCard
         header={
           <AuthScreenHeader
-            title="Verificar email"
-            description="Esta página precisa do email na ligação. Regista-te de novo ou inicia sessão se já tiveres conta."
+            title={t("missingEmailTitle")}
+            description={t("missingEmailDescription")}
           />
         }
         footer={
@@ -65,7 +81,7 @@ export function VerifyEmailForm() {
               href="/signup"
               className={cn(buttonVariants({ className: "w-full sm:w-auto" }))}
             >
-              Criar conta
+              {t("createAccount")}
             </Link>
             <Link
               href="/login"
@@ -76,7 +92,7 @@ export function VerifyEmailForm() {
                 }),
               )}
             >
-              Entrar
+              {t("login")}
             </Link>
           </div>
         }
@@ -88,14 +104,14 @@ export function VerifyEmailForm() {
     <AuthCard
       header={
         <AuthScreenHeader
-          title="Confirma o teu email"
+          title={t("title")}
           description={
             <>
-              Introduz o código de 6 dígitos que enviámos para{" "}
+              {t("descriptionBefore")}{" "}
               <span className="break-all font-mono text-[0.8125rem] font-medium text-foreground">
                 {emailParam}
               </span>
-              .
+              {t("descriptionAfter")}
             </>
           }
           adornment={
@@ -107,14 +123,14 @@ export function VerifyEmailForm() {
       }
       footer={
         <p className="text-center text-sm text-muted-foreground">
-          Já verificaste?{" "}
+          {t("alreadyVerified")}{" "}
           <Link
             href={`/login?email=${encodeURIComponent(emailParam)}`}
             className={cn(
               buttonVariants({ variant: "link", className: "h-auto p-0" }),
             )}
           >
-            Ir para o login
+            {t("goToLogin")}
           </Link>
         </p>
       }
@@ -124,11 +140,15 @@ export function VerifyEmailForm() {
         onSubmit={form.handleSubmit(async (values) => {
           setSubmitError(null);
           try {
-            await AVerifyEmail(values.email, values.code);
-            toast.success("Email verificado. Podes iniciar sessão.");
-            router.replace(
-              `/login?email=${encodeURIComponent(values.email)}`,
-            );
+            const result = await AVerifyEmail(values.email, values.code);
+            if (result.ok) {
+              toast.success(t("successToast"));
+              router.replace(
+                `/login?email=${encodeURIComponent(values.email)}`,
+              );
+              return;
+            }
+            setSubmitError(ApiError.fromFields(result));
           } catch (e) {
             setSubmitError(e);
           }
@@ -139,7 +159,7 @@ export function VerifyEmailForm() {
         <input type="hidden" {...form.register("email")} />
 
         <FormField
-          label="Código de verificação"
+          label={t("codeLabel")}
           htmlFor="code"
           required
           error={form.formState.errors.code?.message}
@@ -181,8 +201,8 @@ export function VerifyEmailForm() {
         <div className="flex flex-col gap-3 pt-1">
           <AuthSubmitButton
             pending={form.formState.isSubmitting}
-            idleLabel="Confirmar e continuar"
-            pendingLabel="A confirmar…"
+            idleLabel={t("submit")}
+            pendingLabel={t("submitting")}
           />
           <Button
             type="button"
@@ -192,18 +212,20 @@ export function VerifyEmailForm() {
             onClick={async () => {
               setResendPending(true);
               try {
-                const msg = await AResendEmailVerification(emailParam);
-                toast.success(msg);
-              } catch (e) {
-                toast.error(
-                  e instanceof Error ? e.message : "Não foi possível reenviar.",
-                );
+                const result = await AResendEmailVerification(emailParam);
+                if (result.ok) {
+                  toast.success(t("resendSuccessToast"));
+                } else {
+                  toast.error(
+                    formatApiErrorForUser(ApiError.fromFields(result), tApi),
+                  );
+                }
               } finally {
                 setResendPending(false);
               }
             }}
           >
-            {resendPending ? "A enviar…" : "Reenviar código"}
+            {resendPending ? t("resending") : t("resend")}
           </Button>
         </div>
       </form>

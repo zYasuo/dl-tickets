@@ -1,3 +1,4 @@
+import { CLIENT_UI_ERROR_CODES } from "@/lib/api/api-error-codes";
 import type { components } from "@/lib/api/v1";
 
 export type StandardErrorBody = components["schemas"]["StandardErrorResponseDto"];
@@ -44,6 +45,22 @@ export class ApiError extends Error {
       statusCode: fallbackStatus,
       error: "Error",
       message: "Invalid request or server unavailable.",
+      code: CLIENT_UI_ERROR_CODES.REQUEST_FAILED,
+    });
+  }
+
+  static fromFields(params: {
+    statusCode: number;
+    message: string;
+    code?: string;
+  }): ApiError {
+    return new ApiError({
+      success: false,
+      timestamp: new Date().toISOString(),
+      statusCode: params.statusCode,
+      error: "Error",
+      message: params.message,
+      ...(params.code !== undefined ? { code: params.code } : {}),
     });
   }
 }

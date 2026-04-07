@@ -9,7 +9,6 @@ type FormFieldProps = {
   htmlFor?: string;
   error?: string;
   required?: boolean;
-  /** Rendered on the same row as the label (e.g. forgot-password link). */
   labelTrailing?: ReactNode;
   children: React.ReactNode;
   className?: string;

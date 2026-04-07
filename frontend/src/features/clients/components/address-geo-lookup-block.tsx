@@ -10,7 +10,7 @@ import type {
 } from "react-hook-form";
 import { useWatch } from "react-hook-form";
 
-import type { AddressFormValues } from "@/features/clients/schemas/client.schema";
+import type { AddressBody } from "@/features/clients/schemas/client.schema";
 import {
   LocationLookupRow,
   type GeoOption,
@@ -31,7 +31,7 @@ function toGeoOptions(
   }));
 }
 
-type AddressGeoLookupBlockProps<T extends FieldValues & { address: AddressFormValues }> =
+type AddressGeoLookupBlockProps<T extends FieldValues & { address: AddressBody }> =
   {
     control: Control<T>;
     register: UseFormRegister<T>;
@@ -41,7 +41,7 @@ type AddressGeoLookupBlockProps<T extends FieldValues & { address: AddressFormVa
     stackLabel?: boolean;
   };
 
-export function AddressGeoLookupBlock<T extends FieldValues & { address: AddressFormValues }>({
+export function AddressGeoLookupBlock<T extends FieldValues & { address: AddressBody }>({
   control,
   register,
   setValue,

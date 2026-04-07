@@ -2,15 +2,20 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import type { CreateClientBody } from "@/features/clients/actions";
 import { AddressGeoLookupBlock } from "@/features/clients/components/address-geo-lookup-block";
 import { useCreateClient } from "@/features/clients/hooks/use-create-client";
-import { DEFAULT_COUNTRY_UUID_BR } from "@/features/locations/constants";
+import { useBuildSCreateClientFormParams } from "@/features/clients/hooks/use-client-validation-messages";
 import {
-  createClientFormSchema,
-  type CreateClientFormValues,
+  clientFormToCreateBody,
+  getCreateClientFormDefaultValues,
+} from "@/features/clients/lib/client-form-mappers";
+import {
+  buildSCreateClientForm,
+  type CreateClientFormBody,
 } from "@/features/clients/schemas/client.schema";
 import { cn } from "@/lib/utils";
 import { ErrorAlert } from "@/shared/components/error-alert";
@@ -19,73 +24,22 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Separator } from "@/shared/components/ui/separator";
 
-function toCreateBody(values: CreateClientFormValues): CreateClientBody {
-  const comp = values.address.complement?.trim();
-  const address = {
-    street: values.address.street.trim(),
-    number: values.address.number.trim(),
-    neighborhood: values.address.neighborhood.trim(),
-    zipCode: values.address.zipCode.trim(),
-    stateUuid: values.address.stateUuid.trim(),
-    cityUuid: values.address.cityUuid.trim(),
-    ...(comp ? { complement: comp } : {}),
-  };
-
-  const isForeignNational = values.foreignNational;
-
-  if (isForeignNational) {
-    return {
-      name: values.name.trim(),
-      cnpj: values.cnpj!.trim(),
-      address,
-      isForeignNational: true,
-    };
-  }
-
-  if (values.documentKind === "cpf") {
-    return {
-      name: values.name.trim(),
-      cpf: values.cpf!.trim(),
-      address,
-      isForeignNational: false,
-    };
-  }
-
-  return {
-    name: values.name.trim(),
-    cnpj: values.cnpj!.trim(),
-    address,
-    isForeignNational: false,
-  };
-}
-
 type DocKind = "cpf" | "cnpj";
 
 export function ClientCreateForm() {
   const router = useRouter();
   const mutation = useCreateClient();
+  const tClients = useTranslations("clients");
 
-  const form = useForm<CreateClientFormValues>({
-    resolver: zodResolver(createClientFormSchema),
-    defaultValues: {
-      foreignNational: false,
-      documentKind: "cpf",
-      name: "",
-      cpf: "",
-      cnpj: "",
-      address: {
-        street: "",
-        number: "",
-        complement: "",
-        neighborhood: "",
-        zipCode: "",
-        countryUuid: DEFAULT_COUNTRY_UUID_BR,
-        stateUuid: "",
-        cityUuid: "",
-        stateDisplay: "",
-        cityDisplay: "",
-      },
-    },
+  const createClientParams = useBuildSCreateClientFormParams();
+  const createClientSchema = useMemo(
+    () => buildSCreateClientForm(createClientParams),
+    [createClientParams],
+  );
+
+  const form = useForm<CreateClientFormBody>({
+    resolver: zodResolver(createClientSchema),
+    defaultValues: getCreateClientFormDefaultValues(),
   });
 
   const documentKind = form.watch("documentKind");
@@ -116,9 +70,9 @@ export function ClientCreateForm() {
       <form
         className="w-full space-y-6"
         onSubmit={form.handleSubmit((values) => {
-          mutation.mutate(toCreateBody(values), {
+          mutation.mutate(clientFormToCreateBody(values), {
             onSuccess: () => {
-              toast.success("Cliente criado");
+              toast.success(tClients("createdToast"));
               void router.push("/dashboard/clients");
             },
           });
@@ -350,7 +304,7 @@ export function ClientCreateForm() {
               />
             </FormField>
             <div className="flex flex-col gap-4 py-2 sm:col-span-6 sm:py-3">
-              <AddressGeoLookupBlock<CreateClientFormValues>
+              <AddressGeoLookupBlock<CreateClientFormBody>
                 control={form.control}
                 register={form.register}
                 setValue={form.setValue}

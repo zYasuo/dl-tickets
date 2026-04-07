@@ -1,45 +1,66 @@
 import { z } from "zod";
 
-export const addressFormSchema = z.object({
-  street: z.string().min(1, "Rua ou logradouro obrigatório"),
-  number: z.string().min(1, "Número obrigatório"),
-  complement: z.string().optional(),
-  neighborhood: z.string().min(1, "Bairro obrigatório"),
-  zipCode: z.string().min(1, "CEP obrigatório"),
-  countryUuid: z.uuid(),
-  stateUuid: z
-    .string()
-    .min(1, "Estado obrigatório")
-    .uuid("Indique um estado válido (UUID)"),
-  cityUuid: z
-    .string()
-    .min(1, "Cidade obrigatória")
-    .uuid("Indique uma cidade válida (UUID)"),
-  stateDisplay: z.string().optional(),
-  cityDisplay: z.string().optional(),
-});
+export type BuildSAddressBodyParams = {
+  streetRequired: string;
+  numberRequired: string;
+  neighborhoodRequired: string;
+  zipRequired: string;
+  stateRequired: string;
+  stateUuidInvalid: string;
+  cityRequired: string;
+  cityUuidInvalid: string;
+};
+
+export function buildSAddressBody(params: BuildSAddressBodyParams) {
+  return z.object({
+    street: z.string().min(1, params.streetRequired),
+    number: z.string().min(1, params.numberRequired),
+    complement: z.string().optional(),
+    neighborhood: z.string().min(1, params.neighborhoodRequired),
+    zipCode: z.string().min(1, params.zipRequired),
+    countryUuid: z.uuid(),
+    stateUuid: z
+      .string()
+      .min(1, params.stateRequired)
+      .uuid(params.stateUuidInvalid),
+    cityUuid: z
+      .string()
+      .min(1, params.cityRequired)
+      .uuid(params.cityUuidInvalid),
+    stateDisplay: z.string().optional(),
+    cityDisplay: z.string().optional(),
+  });
+}
+
+export type ClientIdentificationMessages = {
+  cpfNotForForeign: string;
+  cnpjRequiredForeign: string;
+  cpfRequired: string;
+  cnpjRequired: string;
+};
 
 export function refineClientIdentification(
   data: {
-    foreignNational: boolean
-    documentKind: "cpf" | "cnpj"
-    cpf?: string | undefined
-    cnpj?: string | undefined
+    foreignNational: boolean;
+    documentKind: "cpf" | "cnpj";
+    cpf?: string | undefined;
+    cnpj?: string | undefined;
   },
   ctx: z.RefinementCtx,
+  m: ClientIdentificationMessages,
 ): void {
   if (data.foreignNational) {
     if (data.cpf?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "CPF não se aplica a cliente estrangeiro",
+        message: m.cpfNotForForeign,
         path: ["cpf"],
       });
     }
     if (!data.cnpj?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "CNPJ obrigatório",
+        message: m.cnpjRequiredForeign,
         path: ["cnpj"],
       });
     }
@@ -49,32 +70,42 @@ export function refineClientIdentification(
     if (!data.cpf?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "CPF obrigatório",
+        message: m.cpfRequired,
         path: ["cpf"],
       });
     }
   } else if (!data.cnpj?.trim()) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "CNPJ obrigatório",
+      message: m.cnpjRequired,
       path: ["cnpj"],
     });
   }
 }
 
-export const createClientFormSchema = z
-  .object({
-    foreignNational: z.boolean(),
-    documentKind: z.enum(["cpf", "cnpj"]),
-    name: z.string().min(1, "Nome ou razão social obrigatório").max(255),
-    cpf: z.string().optional(),
-    cnpj: z.string().optional(),
-    address: addressFormSchema,
-  })
-  .superRefine((data, ctx) => {
-    refineClientIdentification(data, ctx);
-  });
+export type BuildSCreateClientFormParams = {
+  nameRequired: string;
+  address: BuildSAddressBodyParams;
+  identification: ClientIdentificationMessages;
+};
 
-export type CreateClientFormValues = z.infer<typeof createClientFormSchema>;
+export function buildSCreateClientForm(params: BuildSCreateClientFormParams) {
+  return z
+    .object({
+      foreignNational: z.boolean(),
+      documentKind: z.enum(["cpf", "cnpj"]),
+      name: z.string().min(1, params.nameRequired).max(255),
+      cpf: z.string().optional(),
+      cnpj: z.string().optional(),
+      address: buildSAddressBody(params.address),
+    })
+    .superRefine((data, ctx) => {
+      refineClientIdentification(data, ctx, params.identification);
+    });
+}
 
-export type AddressFormValues = z.infer<typeof addressFormSchema>;
+export type CreateClientFormBody = z.infer<
+  ReturnType<typeof buildSCreateClientForm>
+>;
+
+export type AddressBody = z.infer<ReturnType<typeof buildSAddressBody>>;

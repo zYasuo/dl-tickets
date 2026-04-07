@@ -9,15 +9,19 @@ import {
   useState,
 } from "react";
 import { ALoadSession, ALogin, ALogout } from "@/features/auth/actions";
-import type { AuthUser } from "@/features/auth/types";
+import type {
+  AuthUser,
+  LoginActionResult,
+  LogoutActionResult,
+} from "@/features/auth/types";
 
 export type { AuthUser };
 
 type AuthContextValue = {
   user: AuthUser | null;
   isReady: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  login: (email: string, password: string) => Promise<LoginActionResult>;
+  logout: () => Promise<LogoutActionResult>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -45,13 +49,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { user: next } = await ALogin(email, password);
-    setUser(next);
+    const result = await ALogin(email, password);
+    if (result.ok) setUser(result.user);
+    return result;
   }, []);
 
   const logout = useCallback(async () => {
-    await ALogout();
+    const result = await ALogout();
     setUser(null);
+    return result;
   }, []);
 
   const value = useMemo<AuthContextValue>(

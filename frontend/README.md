@@ -95,7 +95,7 @@ Respostas de sucesso seguem o envelope Nest: `{ success, timestamp, data }`; lis
 
 ## OpenAPI / types
 
-Tipos em [`src/lib/api/v1.d.ts`](src/lib/api/v1.d.ts) gerados a partir de [`openapi/openapi.snapshot.json`](openapi/openapi.snapshot.json).
+Tipos em [`src/lib/api/v1.d.ts`](src/lib/api/v1.d.ts) gerados a partir de [`openapi/openapi.snapshot.json`](openapi/openapi.snapshot.json). O schema de erro (`StandardErrorResponseDto`) inclui **`code?: string`** (código estável da API, alinhado ao backend).
 
 ```bash
 npm run openapi:generate   # a partir do snapshot local
@@ -105,13 +105,15 @@ npm run openapi:generate
 
 Opcional: `OPENAPI_URL` ao correr `openapi:pull`.
 
+**Erros na UI:** [`ApiError`](src/lib/api/api-error.ts) expõe **`code`** quando o backend envia. Constantes por feature (ex.: [`features/auth/lib/auth-api-error-codes.ts`](src/features/auth/lib/auth-api-error-codes.ts)) devem manter os **mesmos valores string** que `src/modules/<módulo>/application/errors/*-api-error-codes.ts` no backend.
+
 ## Architecture (short)
 
 - **`src/features/dashboard`**: `DashboardShell`, sidebar, `useDashboardBusinessStats`, `DashboardInputCard`, `DashboardClientSearch`, donut/barras/linhas/radiais e listas recentes.
 - **`src/features/clients`**: server actions (`actions.ts`), hooks (`useClientsList`, `useClientDetail`, `useClientsSearch`), vistas de lista e detalhe.
 - **`src/features/client-contracts`**: actions e hooks (`useClientContractsList`, `useClientContractsByClient`, …).
 - **`src/features/tickets`**: hooks, schemas Zod, UI de chamados.
-- **`src/lib/api`**: `backendRequest`, `ApiError`, tipos OpenAPI.
+- **`src/lib/api`**: `backendRequest`, `ApiError` (incl. `code` opcional), tipos OpenAPI.
 - **`src/shared`**: UI partilhada (`PageHeader`, `EmptyState`, `ErrorAlert`, `useDebouncedValue`).
 
 **Nota:** não existe `GET /tickets/:id` dedicado no backend. A página de edição localiza o ticket na lista paginada (MVP).

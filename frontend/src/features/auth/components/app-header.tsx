@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { LogOut, Ticket } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/components/auth-provider";
+import { ApiError } from "@/lib/api/api-error";
+import { formatApiErrorForUser } from "@/lib/api/format-api-error-for-user";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/shared/components/ui/button-variants";
 import {
@@ -25,14 +28,17 @@ function initialsFromEmail(email: string): string {
 export function AppHeader() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const tLogout = useTranslations("auth.logout");
+  const tApi = useTranslations("errors.api");
+  const tCommon = useTranslations("common");
 
   async function handleLogout() {
-    try {
-      await logout();
-      toast.success("Signed out");
+    const result = await logout();
+    if (result.ok) {
+      toast.success(tLogout("successToast"));
       router.replace("/login");
-    } catch {
-      toast.error("Could not sign out. Please try again.");
+    } else {
+      toast.error(formatApiErrorForUser(ApiError.fromFields(result), tApi));
     }
   }
 
@@ -44,7 +50,7 @@ export function AppHeader() {
           className="flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground hover:text-primary"
         >
           <Ticket className="size-5" aria-hidden />
-          DL Tickets
+          {tCommon("appName")}
         </Link>
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -56,7 +62,7 @@ export function AppHeader() {
                   "size-8 rounded-full bg-primary p-0 text-xs font-medium text-primary-foreground hover:bg-primary/90",
               }),
             )}
-            aria-label="Account menu"
+            aria-label={tCommon("accountMenu")}
           >
             {user ? initialsFromEmail(user.email) : "?"}
           </DropdownMenuTrigger>

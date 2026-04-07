@@ -1,15 +1,24 @@
 import { z } from "zod";
 
-export const SSignup = z
-  .object({
-    name: z.string().min(1, "Name is required").max(255),
-    email: z.email("Invalid email").max(254),
-    password: z.string().min(8, "At least 8 characters").max(255),
-    confirmPassword: z.string(),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+export type BuildSCreateUserParams = {
+  nameRequired: string;
+  emailInvalid: string;
+  passwordMin: string;
+  passwordsMismatch: string;
+};
 
-export type SignupFormValues = z.infer<typeof SSignup>;
+export function buildSCreateUser(params: BuildSCreateUserParams) {
+  return z
+    .object({
+      name: z.string().min(1, params.nameRequired).max(255),
+      email: z.email(params.emailInvalid).max(254),
+      password: z.string().min(8, params.passwordMin).max(255),
+      confirmPassword: z.string(),
+    })
+    .refine((d) => d.password === d.confirmPassword, {
+      message: params.passwordsMismatch,
+      path: ["confirmPassword"],
+    });
+}
+
+export type CreateUserFormBody = z.infer<ReturnType<typeof buildSCreateUser>>;

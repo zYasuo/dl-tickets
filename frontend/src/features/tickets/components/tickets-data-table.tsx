@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Fragment,
   useEffect,
@@ -180,6 +181,7 @@ export function TicketsDataTable({
   onRowOpenTicket,
   embedded = false,
 }: TicketsDataTableProps) {
+  const tTable = useTranslations("tickets.table");
   const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -199,7 +201,7 @@ export function TicketsDataTable({
         header: () => (
           <span className="inline-flex items-center gap-1.5 text-muted-foreground">
             <HashIcon className="size-3.5 opacity-70" aria-hidden />
-            Código
+            {tTable("code")}
           </span>
         ),
         cell: ({ row, table }) => {
@@ -225,7 +227,7 @@ export function TicketsDataTable({
         accessorKey: "title",
         header: () => (
           <ColumnHeaderMenu
-            label="Título"
+            label={tTable("title")}
             sortBy={sortBy}
             sortOrder={sortOrder}
             columnSortId="title"
@@ -242,7 +244,7 @@ export function TicketsDataTable({
         id: "description",
         accessorFn: (row) => row.description,
         header: () => (
-          <span className="text-muted-foreground">Descrição</span>
+          <span className="text-muted-foreground">{tTable("description")}</span>
         ),
         cell: ({ row }) => {
           const raw = row.original.description?.trim() ?? "";
@@ -256,7 +258,7 @@ export function TicketsDataTable({
                   {raw}
                 </span>
               ) : (
-                <span className="italic opacity-60">Sem descrição</span>
+                <span className="italic opacity-60">{tTable("noDescription")}</span>
               )}
             </p>
           );
@@ -280,7 +282,7 @@ export function TicketsDataTable({
         accessorKey: "createdAt",
         header: () => (
           <ColumnHeaderMenu
-            label="Criado"
+            label={tTable("created")}
             sortBy={sortBy}
             sortOrder={sortOrder}
             columnSortId="createdAt"
@@ -307,7 +309,7 @@ export function TicketsDataTable({
         accessorKey: "updatedAt",
         header: () => (
           <ColumnHeaderMenu
-            label="Atualizado"
+            label={tTable("updated")}
             sortBy={sortBy}
             sortOrder={sortOrder}
             columnSortId="updatedAt"
@@ -332,7 +334,7 @@ export function TicketsDataTable({
       },
       {
         id: "actions",
-        header: () => <span className="sr-only">Ações</span>,
+        header: () => <span className="sr-only">{tTable("actions")}</span>,
         cell: ({ row }) => (
           <RowActionsMenu
             ticket={row.original}
@@ -343,6 +345,7 @@ export function TicketsDataTable({
       },
     ],
     [
+      tTable,
       sortBy,
       sortOrder,
       statusFilter,
@@ -407,8 +410,12 @@ export function TicketsDataTable({
                     }
                     aria-label={
                       isExpanded
-                        ? `Recolher detalhes do chamado ${ticketCode(ticket.id)}`
-                        : `Expandir detalhes do chamado ${ticketCode(ticket.id)}`
+                        ? tTable("collapse", {
+                            code: ticketCode(ticket.id),
+                          })
+                        : tTable("expand", {
+                            code: ticketCode(ticket.id),
+                          })
                     }
                     className={cn(
                       "cursor-pointer border-border/60 transition-colors hover:bg-muted/40",
@@ -479,6 +486,7 @@ function ExpandedTicketPanel({
   ticket: TicketPublic;
   onEdit: () => void;
 }) {
+  const t = useTranslations("tickets.table");
   const desc = ticket.description?.trim() ?? "";
 
   return (
@@ -486,7 +494,7 @@ function ExpandedTicketPanel({
       id={expandedTicketPanelDomId(ticket.id)}
       className="animate-in fade-in-0 border-t border-border bg-card duration-150"
       role="region"
-      aria-label={`Detalhes: ${ticket.title}`}
+      aria-label={t("detailAria", { title: ticket.title })}
     >
       <div className="flex flex-col gap-2 border-b border-border/80 bg-muted/35 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-5">
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
@@ -496,14 +504,14 @@ function ExpandedTicketPanel({
           <StatusBadgeCompact status={ticket.status} />
         </div>
         <p className="text-xs leading-relaxed text-muted-foreground sm:max-w-[55%] sm:text-end">
-          <span className="text-muted-foreground/65">Criado</span>{" "}
+          <span className="text-muted-foreground/65">{t("labelCreated")}</span>{" "}
           <span className="text-foreground/90">
             {formatTicketDateLabel(ticket.createdAt)}
           </span>
           <span className="mx-2 text-border" aria-hidden>
             ·
           </span>
-          <span className="text-muted-foreground/65">Atualizado</span>{" "}
+          <span className="text-muted-foreground/65">{t("labelUpdated")}</span>{" "}
           <span className="text-foreground/90">
             {formatTicketDateLabel(ticket.updatedAt)}
           </span>
@@ -516,7 +524,7 @@ function ExpandedTicketPanel({
         </h3>
         <div className="space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            Descrição
+            {t("descriptionHeading")}
           </p>
           {desc ? (
             <p className="max-w-3xl text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
@@ -524,7 +532,7 @@ function ExpandedTicketPanel({
             </p>
           ) : (
             <p className="text-sm italic text-muted-foreground">
-              Sem descrição registada.
+              {t("noDescriptionRegistered")}
             </p>
           )}
         </div>
@@ -541,7 +549,7 @@ function ExpandedTicketPanel({
           )}
           onClick={(e) => e.stopPropagation()}
         >
-          Abrir página de edição
+          {t("openEditPage")}
         </Link>
         <Button
           type="button"
@@ -553,7 +561,7 @@ function ExpandedTicketPanel({
           }}
         >
           <PencilIcon className="size-4 opacity-80" />
-          Editar
+          {t("editButton")}
         </Button>
       </div>
     </div>
@@ -573,6 +581,7 @@ function ColumnHeaderMenu({
   sortOrder: TicketListSortOrder;
   onSort: (by: TicketListSortBy, order: TicketListSortOrder) => void;
 }) {
+  const t = useTranslations("tickets.table");
   const active = sortBy === columnSortId;
 
   return (
@@ -597,11 +606,11 @@ function ColumnHeaderMenu({
       <DropdownMenuContent align="start" className="w-44">
         <DropdownMenuItem onClick={() => onSort(columnSortId, "asc")}>
           <ArrowUpIcon className="size-4" />
-          Ascendente
+          {t("sortAsc")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onSort(columnSortId, "desc")}>
           <ArrowDownIcon className="size-4" />
-          Descendente
+          {t("sortDesc")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -609,7 +618,7 @@ function ColumnHeaderMenu({
             onSort("createdAt", "desc");
           }}
         >
-          Ordenação padrão (criado)
+          {t("sortDefaultCreated")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -656,6 +665,7 @@ function StatusColumnHeader({
   onSort: (by: TicketListSortBy, order: TicketListSortOrder) => void;
   onStatusFilter: (status: TicketListStatusFilter | undefined) => void;
 }) {
+  const t = useTranslations("tickets.table");
   const active = sortBy === "status";
 
   return (
@@ -666,7 +676,7 @@ function StatusColumnHeader({
           active && "text-primary",
         )}
       >
-        Estado
+        {t("status")}
         {active ? (
           sortOrder === "asc" ? (
             <ArrowUpIcon className="size-4 opacity-80" />
@@ -680,34 +690,34 @@ function StatusColumnHeader({
       <DropdownMenuContent align="start" className="w-48">
         <DropdownMenuItem onClick={() => onSort("status", "asc")}>
           <ArrowUpIcon className="size-4" />
-          Ascendente
+          {t("sortAsc")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onSort("status", "desc")}>
           <ArrowDownIcon className="size-4" />
-          Descendente
+          {t("sortDesc")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Filtrar por estado</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("filterByStatus")}</DropdownMenuLabel>
           <StatusFilterItem
-            label="Todos"
+            label={t("filterAll")}
             selected={statusFilter === undefined}
             onSelect={() => onStatusFilter(undefined)}
           />
           <StatusFilterItem
-            label="Aberto"
+            label={t("filterOpen")}
             selected={statusFilter === "OPEN"}
             onSelect={() => onStatusFilter("OPEN")}
             icon={InboxIcon}
           />
           <StatusFilterItem
-            label="Em progresso"
+            label={t("filterInProgress")}
             selected={statusFilter === "IN_PROGRESS"}
             onSelect={() => onStatusFilter("IN_PROGRESS")}
             icon={TimerIcon}
           />
           <StatusFilterItem
-            label="Concluído"
+            label={t("filterDone")}
             selected={statusFilter === "DONE"}
             onSelect={() => onStatusFilter("DONE")}
             icon={CheckCircle2Icon}
@@ -725,6 +735,7 @@ function RowActionsMenu({
   ticket: TicketPublic;
   onOpenEdit: (t: TicketPublic) => void;
 }) {
+  const t = useTranslations("tickets");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -732,7 +743,7 @@ function RowActionsMenu({
           buttonVariants({ variant: "ghost", size: "icon" }),
           "size-8 text-muted-foreground",
         )}
-        aria-label="Abrir menu de ações"
+        aria-label={t("openRowActions")}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >
@@ -747,7 +758,7 @@ function RowActionsMenu({
           }}
         >
           <PencilIcon className="size-4 shrink-0 opacity-70" />
-          Editar
+          {t("rowEdit")}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="gap-2"
@@ -755,18 +766,18 @@ function RowActionsMenu({
             e.stopPropagation();
             try {
               if (!navigator.clipboard?.writeText) {
-                toast.error("Cópia não disponível neste navegador.");
+                toast.error(t("copyUnavailable"));
                 return;
               }
               await navigator.clipboard.writeText(ticket.id);
-              toast.success("ID copiado.");
+              toast.success(t("idCopied"));
             } catch {
-              toast.error("Não foi possível copiar o ID.");
+              toast.error(t("idCopyFailed"));
             }
           }}
         >
           <CopyIcon className="size-4 shrink-0 opacity-70" />
-          Copiar ID (UUID)
+          {t("rowCopyUuid")}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="gap-2"
@@ -774,18 +785,18 @@ function RowActionsMenu({
             e.stopPropagation();
             try {
               if (!navigator.clipboard?.writeText) {
-                toast.error("Cópia não disponível neste navegador.");
+                toast.error(t("copyUnavailable"));
                 return;
               }
               await navigator.clipboard.writeText(ticketCode(ticket.id));
-              toast.success("Código copiado.");
+              toast.success(t("codeCopied"));
             } catch {
-              toast.error("Não foi possível copiar o código.");
+              toast.error(t("codeCopyFailed"));
             }
           }}
         >
           <HashIcon className="size-4 shrink-0 opacity-70" />
-          Copiar código
+          {t("rowCopyCode")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

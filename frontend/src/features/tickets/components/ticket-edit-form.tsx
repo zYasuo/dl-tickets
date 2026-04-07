@@ -5,14 +5,15 @@ import { format, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { LayoutDashboardIcon, ListIcon } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useTicketDetail } from "@/features/tickets/hooks/use-ticket-detail";
 import { useUpdateTicket } from "@/features/tickets/hooks/use-update-ticket";
 import {
-  updateTicketFormSchema,
-  type UpdateTicketFormValues,
+  buildSUpdateTicket,
+  type UpdateTicketFormBody,
 } from "@/features/tickets/schemas/ticket.schema";
 import type { TicketPublic } from "@/lib/api/tickets-api";
 import { ticketCode } from "@/features/tickets/lib/ticket-code";
@@ -50,6 +51,7 @@ function formatDateTimePt(iso: string): string {
 }
 
 function TicketEditSidePanel({ ticket }: { ticket: TicketPublic }) {
+  const t = useTranslations("tickets.edit");
   return (
     <div className="flex flex-col gap-4 lg:max-w-none">
       <Card
@@ -57,15 +59,15 @@ function TicketEditSidePanel({ ticket }: { ticket: TicketPublic }) {
         size="sm"
       >
         <CardHeader className="border-b border-border/80 bg-muted/20 px-4 py-3 sm:px-4">
-          <CardTitle className="text-sm font-medium">Informação do registo</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("sideInfoTitle")}</CardTitle>
           <CardDescription className="text-xs">
-            Dados fixos associados a este chamado.
+            {t("sideInfoDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 px-4 py-4">
           <dl className="grid gap-3 text-sm">
             <div className="grid gap-0.5">
-              <dt className="text-xs font-medium text-muted-foreground">Código</dt>
+              <dt className="text-xs font-medium text-muted-foreground">{t("fieldCode")}</dt>
               <dd className="font-mono text-xs tracking-tight text-foreground">
                 {ticketCode(ticket.id)}
               </dd>
@@ -74,14 +76,14 @@ function TicketEditSidePanel({ ticket }: { ticket: TicketPublic }) {
           <div className="space-y-3 border-t border-border/70 pt-3">
             <dl className="grid gap-3 text-sm">
               <div className="grid gap-0.5">
-                <dt className="text-xs font-medium text-muted-foreground">Criado</dt>
+                <dt className="text-xs font-medium text-muted-foreground">{t("fieldCreated")}</dt>
                 <dd className="tabular-nums text-foreground">
                   {formatDateTimePt(ticket.createdAt)}
                 </dd>
               </div>
               <div className="grid gap-0.5">
                 <dt className="text-xs font-medium text-muted-foreground">
-                  Última atualização
+                  {t("fieldUpdated")}
                 </dt>
                 <dd className="tabular-nums text-foreground">
                   {formatDateTimePt(ticket.updatedAt)}
@@ -90,8 +92,7 @@ function TicketEditSidePanel({ ticket }: { ticket: TicketPublic }) {
             </dl>
           </div>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            O guardar envia a data da última leitura para evitar sobrescrever alterações feitas
-            entretanto noutro sítio.
+            {t("concurrencyNote")}
           </p>
         </CardContent>
       </Card>
@@ -101,7 +102,7 @@ function TicketEditSidePanel({ ticket }: { ticket: TicketPublic }) {
         size="sm"
       >
         <CardHeader className="border-b border-border/80 bg-muted/20 px-4 py-3">
-          <CardTitle className="text-sm font-medium">Navegação</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("navTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-1 p-2">
           <Link
@@ -112,7 +113,7 @@ function TicketEditSidePanel({ ticket }: { ticket: TicketPublic }) {
             )}
           >
             <ListIcon className="size-4 shrink-0 opacity-70" aria-hidden />
-            Lista de chamados
+            {t("navTicketList")}
           </Link>
           <Link
             href="/dashboard"
@@ -122,7 +123,7 @@ function TicketEditSidePanel({ ticket }: { ticket: TicketPublic }) {
             )}
           >
             <LayoutDashboardIcon className="size-4 shrink-0 opacity-70" aria-hidden />
-            Visão geral
+            {t("navOverview")}
           </Link>
         </CardContent>
       </Card>
@@ -139,6 +140,8 @@ export function TicketEditForm({
   onCancel,
 }: TicketEditFormProps) {
   const router = useRouter();
+  const tTickets = useTranslations("tickets");
+  const tVal = useTranslations("validation");
   const skipListScan = Boolean(
     initialTicket && initialTicket.id === ticketId,
   );
@@ -155,8 +158,19 @@ export function TicketEditForm({
   const isNotFound =
     !skipListScan && detail.isSuccess && detail.data === null;
 
-  const form = useForm<UpdateTicketFormValues>({
-    resolver: zodResolver(updateTicketFormSchema),
+  const updateTicketSchema = useMemo(
+    () =>
+      buildSUpdateTicket({
+        titleRequired: tVal("ticketTitleRequired"),
+        descriptionRequired: tVal("ticketDescriptionRequired"),
+        descriptionMax: tVal("ticketDescriptionMax"),
+        updatedAtRequired: tVal("ticketUpdatedAtRequired"),
+      }),
+    [tVal],
+  );
+
+  const form = useForm<UpdateTicketFormBody>({
+    resolver: zodResolver(updateTicketSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -231,11 +245,11 @@ export function TicketEditForm({
   if (isNotFound) {
     return (
       <EmptyState
-        title="Chamado não encontrado"
-        description="Este identificador não corresponde a nenhum chamado acessível. Verifica o link ou volta à lista."
+        title={tTickets("notFoundTitle")}
+        description={tTickets("notFoundDescription")}
       >
         <Link href="/dashboard/tickets" className={cn(buttonVariants())}>
-          Voltar aos chamados
+          {tTickets("backToTickets")}
         </Link>
       </EmptyState>
     );
@@ -273,7 +287,7 @@ export function TicketEditForm({
         <Textarea
           id="edit-description"
           rows={7}
-          className="min-h-[10rem] resize-y"
+          className="min-h-40 resize-y"
           {...form.register("description")}
         />
       </FormField>

@@ -17,7 +17,7 @@ import {
   FormRadioGroupField,
   clientFormRowGridClass,
 } from "@/features/clients/components/client-modal/form";
-import type { ClientModalFormValues } from "@/features/clients/schemas/client-modal.schema";
+import type { ClientModalBody } from "@/features/clients/schemas/client-modal.schema";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -50,7 +50,7 @@ function FormSection({
 }
 
 export function ClientTabClientePanel() {
-  const form = useFormContext<ClientModalFormValues>();
+  const form = useFormContext<ClientModalBody>();
   const {
     control,
     register,
@@ -108,7 +108,7 @@ export function ClientTabClientePanel() {
             htmlFor="lookup-tipo"
             infoTooltip="Seleccione o tipo de cliente na base de referência (dados de demonstração)."
           >
-            <FormLookupField<ClientModalFormValues>
+            <FormLookupField<ClientModalBody>
               name="tipoClienteLookup"
               control={control}
               options={DEMO_LOOKUP_TIPO_CLIENTE}
@@ -117,7 +117,7 @@ export function ClientTabClientePanel() {
           </FormFieldRow>
 
           <FormFieldRow label="Canal de venda" htmlFor="lookup-canal">
-            <FormLookupField<ClientModalFormValues>
+            <FormLookupField<ClientModalBody>
               name="canalVendaLookup"
               control={control}
               options={DEMO_LOOKUP_CANAL}
@@ -126,7 +126,7 @@ export function ClientTabClientePanel() {
           </FormFieldRow>
 
           <FormFieldRow label="Filial" htmlFor="lookup-filial">
-            <FormLookupField<ClientModalFormValues>
+            <FormLookupField<ClientModalBody>
               name="filialLookup"
               control={control}
               options={DEMO_LOOKUP_FILIAL}
@@ -139,7 +139,7 @@ export function ClientTabClientePanel() {
           title="Classificação e estado"
           description="Tipo de pessoa, tributação, estado do registo e dados pessoais opcionais."
         >
-          <FormRadioGroupField<ClientModalFormValues, "fisica" | "juridica">
+          <FormRadioGroupField<ClientModalBody, "fisica" | "juridica">
             name="personType"
             control={control}
             legend="Tipo pessoa"
@@ -150,7 +150,7 @@ export function ClientTabClientePanel() {
           />
 
           <FormRadioGroupField<
-            ClientModalFormValues,
+            ClientModalBody,
             "contribuinte" | "nao_contribuinte" | "isento"
           >
             name="icmsContributor"
@@ -216,7 +216,7 @@ export function ClientTabClientePanel() {
           />
 
           <FormRadioGroupField<
-            ClientModalFormValues,
+            ClientModalBody,
             "masculino" | "feminino" | "nao_informar"
           >
             name="sex"
@@ -234,7 +234,7 @@ export function ClientTabClientePanel() {
             htmlFor="birth-date"
             infoTooltip="Opcional — útil para pessoa física."
           >
-            <FormDateField<ClientModalFormValues>
+            <FormDateField<ClientModalBody>
               name="birthDate"
               control={control}
               id="birth-date"
