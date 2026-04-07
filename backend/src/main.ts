@@ -1,4 +1,6 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
+import { parseProcessEnv } from './config/env.schema';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './modules/app.module';
@@ -10,6 +12,7 @@ import { isOpenApiDocsEnabled } from './common/openapi/openapi-docs-enabled';
 import { setupOpenApiDocs } from './common/openapi/setup-openapi-docs';
 
 async function bootstrap() {
+  parseProcessEnv();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const trust = getTrustProxySetting();
   if (trust !== false) {

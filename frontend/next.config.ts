@@ -1,11 +1,10 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { env } from "./src/lib/env";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
-const backend =
-  process.env.BACKEND_INTERNAL_URL?.replace(/\/$/, "") ??
-  "http://localhost:3000";
+const backend = env.BACKEND_INTERNAL_URL;
 
 const nextConfig: NextConfig = {
   async rewrites() {

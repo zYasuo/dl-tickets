@@ -6,9 +6,9 @@ import {
   isAccessTokenExpired,
 } from "@/features/auth/lib/jwt-payload";
 import type { AuthUser } from "@/features/auth/types";
+import { env } from "@/lib/env";
 
-const backendBase =
-  process.env.BACKEND_INTERNAL_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
+const backendBase = env.BACKEND_INTERNAL_URL;
 
 export const ACCESS_TOKEN_COOKIE = "accessToken";
 export const REFRESH_TOKEN_COOKIE = "refreshToken";
