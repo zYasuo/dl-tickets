@@ -14,6 +14,5 @@ export const PASSWORD_RESET_REPOSITORY: InjectionToken<PasswordResetRepositoryPo
 
 export const TOKEN_PROVIDER: InjectionToken<TokenProviderPort> = Symbol('TOKEN_PROVIDER');
 
-export const SESSION_TOKEN_ISSUER: InjectionToken<SessionTokenIssuerPort> = Symbol(
-  'SESSION_TOKEN_ISSUER',
-);
+export const SESSION_TOKEN_ISSUER: InjectionToken<SessionTokenIssuerPort> =
+  Symbol('SESSION_TOKEN_ISSUER');

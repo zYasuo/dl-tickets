@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import { randomUUID } from 'node:crypto';
 import { requestNest } from 'src/test-support/supertest-nest-app';
 import { CreateClientUseCase } from 'src/modules/clients/application/use-cases/create-client.use-case';
@@ -29,6 +30,7 @@ describe('ClientController', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [ClientController],
       providers: [
+        { provide: APP_PIPE, useClass: AppZodValidationPipe },
         { provide: CreateClientUseCase, useValue: createClient },
         { provide: FindAllClientsUseCase, useValue: findAll },
         { provide: FindClientByIdUseCase, useValue: findById },

@@ -20,3 +20,4 @@ export type ListCitiesQuery = z.infer<typeof SListCitiesQuery>;
 
 export class CreateCityBodyDto extends createZodDto(SCreateCity) {}
 export class UpdateCityBodyDto extends createZodDto(SUpdateCity) {}
+export class ListCitiesQueryDto extends createZodDto(SListCitiesQuery) {}

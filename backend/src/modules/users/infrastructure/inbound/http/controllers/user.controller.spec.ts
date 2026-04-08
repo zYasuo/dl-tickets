@@ -1,8 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { APP_PIPE } from '@nestjs/core';
 import { randomUUID } from 'node:crypto';
 import { ApplicationException } from 'src/common/errors/application';
 import { HttpExceptionFilter } from 'src/common/http/http-exception.filter';
+import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import { requestNest } from 'src/test-support/supertest-nest-app';
 import { USER_API_ERROR_CODES } from 'src/modules/users/application/errors';
 import { CreateUserUseCase } from 'src/modules/users/application/use-cases/create-user.use-case';
@@ -21,6 +23,7 @@ describe('UserController (integration)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
       providers: [
+        { provide: APP_PIPE, useClass: AppZodValidationPipe },
         {
           provide: CreateUserUseCase,
           useValue: createUser,

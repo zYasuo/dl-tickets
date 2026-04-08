@@ -34,10 +34,7 @@ export class UpdateTicketUseCase {
 
     const expectedVersion = new Date(input.updatedAt);
     if (Number.isNaN(expectedVersion.getTime())) {
-      throw new ApplicationException(
-        TICKET_API_ERROR_CODES.INVALID_VERSION,
-        'Invalid updatedAt',
-      );
+      throw new ApplicationException(TICKET_API_ERROR_CODES.INVALID_VERSION, 'Invalid updatedAt');
     }
 
     const toUpdate = TicketEntity.create({

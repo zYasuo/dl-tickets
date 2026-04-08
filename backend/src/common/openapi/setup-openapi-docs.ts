@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { StandardErrorResponseDto } from './standard-error-response.dto';
 import {
   UserCreatedEnvelopeOpenApiDto,
@@ -50,7 +51,7 @@ export function setupOpenApiDocs(app: INestApplication, options: SetupOpenApiDoc
     .addTag('Client contracts', 'List / create / update / detail — requires Bearer token')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config, {
+  const rawDocument = SwaggerModule.createDocument(app, config, {
     extraModels: [
       StandardErrorResponseDto,
       UserPublicHttpOpenApiDto,
@@ -66,6 +67,8 @@ export function setupOpenApiDocs(app: INestApplication, options: SetupOpenApiDoc
       MessageEnvelopeOpenApiDto,
     ],
   });
+
+  const document = cleanupOpenApiDoc(rawDocument, { version: 'auto' });
 
   SwaggerModule.setup('docs', app, document, {
     swaggerUiEnabled: false,

@@ -15,6 +15,7 @@ import {
 import { DomainError } from '../errors/domain.error';
 import { ConcurrencyError } from '../errors/concurrency.error';
 import type { HttpErrorEnvelope } from './http-contract.types';
+import { ZodSerializationException } from 'nestjs-zod';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -74,6 +75,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
         error: 'Conflict',
         message: exception.message,
         code: COMMON_API_ERROR_CODES.CONFLICT,
+      };
+    }
+
+    if (exception instanceof ZodSerializationException) {
+      const zodErr = exception.getZodError();
+      this.logger.error(
+        'Response failed Zod serialization',
+        zodErr instanceof Error ? zodErr.stack : JSON.stringify(zodErr),
+      );
+      return {
+        success: false,
+        timestamp,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'Internal Server Error',
+        message: 'Internal server error',
       };
     }
 

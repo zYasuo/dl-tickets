@@ -1,7 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { RateLimitGuard } from 'src/common/rate-limit/rate-limit.guard';
@@ -42,6 +43,7 @@ describe('Tickets require auth (e2e-style)', () => {
       imports: [ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }), RateLimitModule],
       controllers: [TicketController],
       providers: [
+        { provide: APP_PIPE, useClass: AppZodValidationPipe },
         { provide: CreateTicketUseCase, useValue: { execute: jest.fn() } },
         { provide: FindAllTicketsUseCase, useValue: { execute: jest.fn() } },
         { provide: FindTicketByIdUseCase, useValue: { execute: jest.fn() } },

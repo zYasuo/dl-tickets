@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import { randomUUID } from 'node:crypto';
 import { requestNest } from 'src/test-support/supertest-nest-app';
 import { CreateTicketUseCase } from 'src/modules/tickets/application/use-case/create-ticket.use-case';
@@ -30,6 +31,7 @@ describe('TicketController (integration)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [TicketController],
       providers: [
+        { provide: APP_PIPE, useClass: AppZodValidationPipe },
         { provide: CreateTicketUseCase, useValue: createTicket },
         { provide: FindAllTicketsUseCase, useValue: findAllTickets },
         { provide: FindTicketByIdUseCase, useValue: findTicketById },

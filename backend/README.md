@@ -30,7 +30,7 @@ Queues give **decoupling**, **retries** (configured on the job), and a clear pla
 
 HTTP **body** and **query** inputs are validated with **Zod** schemas (see `src/modules/**/application/dto`).
 
-A global **`ZodValidationPipe`** (`src/common/pipes/zod-validation.pipe.ts`) runs `safeParse` on incoming data. Invalid requests receive **400** with structured error details instead of failing deep inside the app with obscure errors.
+A global **`AppZodValidationPipe`** ([`src/common/pipes/app-zod-validation.pipe.ts`](src/common/pipes/app-zod-validation.pipe.ts)), built with **`createZodValidationPipe`** from **`nestjs-zod`**, validates parameters typed with **`createZodDto`** classes. Invalid requests receive **400** with structured error details instead of failing deep inside the app with obscure errors.
 
 Benefits:
 

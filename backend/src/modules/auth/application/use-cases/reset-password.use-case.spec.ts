@@ -56,9 +56,9 @@ describe('ResetPasswordUseCase', () => {
   it('throws when reset record not found', async () => {
     passwordResetRepository.findByTokenHash.mockResolvedValue(null);
 
-    await expect(useCase.execute({ token: 't', newPassword: 'newPassword12' })).rejects.toMatchObject(
-      { code: AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN },
-    );
+    await expect(
+      useCase.execute({ token: 't', newPassword: 'newPassword12' }),
+    ).rejects.toMatchObject({ code: AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN });
 
     expect(credentialRepository.updatePasswordHash).not.toHaveBeenCalled();
   });
@@ -75,9 +75,9 @@ describe('ResetPasswordUseCase', () => {
       }),
     );
 
-    await expect(useCase.execute({ token: 't', newPassword: 'newPassword12' })).rejects.toMatchObject(
-      { code: AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN },
-    );
+    await expect(
+      useCase.execute({ token: 't', newPassword: 'newPassword12' }),
+    ).rejects.toMatchObject({ code: AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN });
   });
 
   it('throws when token expired', async () => {
@@ -92,9 +92,9 @@ describe('ResetPasswordUseCase', () => {
       }),
     );
 
-    await expect(useCase.execute({ token: 't', newPassword: 'newPassword12' })).rejects.toMatchObject(
-      { code: AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN },
-    );
+    await expect(
+      useCase.execute({ token: 't', newPassword: 'newPassword12' }),
+    ).rejects.toMatchObject({ code: AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN });
   });
 
   it('updates password, marks used and revokes refresh tokens on success', async () => {

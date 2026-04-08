@@ -17,8 +17,6 @@ const applicationErrorHttpRegistry: Record<string, ApplicationErrorHttpMeta> = {
   ...locationApiErrorHttpMap,
 };
 
-export function resolveApplicationErrorHttp(
-  code: string,
-): ApplicationErrorHttpMeta | undefined {
+export function resolveApplicationErrorHttp(code: string): ApplicationErrorHttpMeta | undefined {
   return applicationErrorHttpRegistry[code];
 }

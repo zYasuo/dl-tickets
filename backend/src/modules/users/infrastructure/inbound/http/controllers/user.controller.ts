@@ -2,11 +2,7 @@ import { Body, Controller } from '@nestjs/common';
 import { Public } from 'src/modules/auth/infrastructure/inbound/http/decorators/public.decorator';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
 import { CreateUserUseCase } from 'src/modules/users/application/use-cases/create-user.use-case';
-import {
-  SCreateUser,
-  type CreateUserBody,
-} from 'src/modules/users/application/dto/create-user.dto';
-import { ZodValidationPipe } from '../../../../../../common/pipes/zod-validation.pipe';
+import { CreateUserBodyDto } from 'src/modules/users/application/dto/create-user.dto';
 import { toUserPublicHttp, type UserPublicHttp } from '../mappers/user-http.mapper';
 import { ApiUsers, UserDoc } from '../docs/user-doc.decorator';
 
@@ -18,9 +14,7 @@ export class UserController {
   @Public()
   @RateLimitEndpoint('users-register')
   @UserDoc.Create()
-  async create(
-    @Body(new ZodValidationPipe(SCreateUser)) dto: CreateUserBody,
-  ): Promise<UserPublicHttp> {
+  async create(@Body() dto: CreateUserBodyDto): Promise<UserPublicHttp> {
     const user = await this.createUserUseCase.execute(dto);
     return toUserPublicHttp(user);
   }

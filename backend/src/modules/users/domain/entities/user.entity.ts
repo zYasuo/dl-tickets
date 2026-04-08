@@ -11,10 +11,7 @@ export type UserEntityProps = {
   updatedAt: Date;
 };
 
-export type CreateUserEntityInput = Omit<
-  UserEntityProps,
-  'email' | 'name' | 'emailVerifiedAt'
-> & {
+export type CreateUserEntityInput = Omit<UserEntityProps, 'email' | 'name' | 'emailVerifiedAt'> & {
   name: string;
   email: string;
   emailVerifiedAt?: Date | null;

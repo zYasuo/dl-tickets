@@ -1,7 +1,6 @@
 import { Body, Controller, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import type { PaginatedResult } from 'src/common/pagination/pagination.types';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import {
   CurrentUser,
   type AuthUser,
@@ -10,18 +9,9 @@ import { CreateClientUseCase } from 'src/modules/clients/application/use-cases/c
 import { FindAllClientsUseCase } from 'src/modules/clients/application/use-cases/find-all-clients.use-case';
 import { FindClientByIdUseCase } from 'src/modules/clients/application/use-cases/find-client-by-id.use-case';
 import { SearchClientsUseCase } from 'src/modules/clients/application/use-cases/search-clients.use-case';
-import {
-  SCreateClient,
-  type CreateClientBody,
-} from 'src/modules/clients/application/dto/create-client.dto';
-import {
-  SFindAllClients,
-  type FindAllClientsQuery,
-} from 'src/modules/clients/application/dto/find-all-clients.dto';
-import {
-  SSearchClients,
-  type SearchClientsQuery,
-} from 'src/modules/clients/application/dto/search-clients.dto';
+import { CreateClientBodyDto } from 'src/modules/clients/application/dto/create-client.dto';
+import { FindAllClientsQueryDto } from 'src/modules/clients/application/dto/find-all-clients.dto';
+import { SearchClientsQueryDto } from 'src/modules/clients/application/dto/search-clients.dto';
 import { ApiClients, ClientDoc } from '../docs/client-doc.decorator';
 import {
   toClientPublicHttp,
@@ -43,7 +33,7 @@ export class ClientController {
   @RateLimitEndpoint('clients-search')
   @ClientDoc.Search()
   async search(
-    @Query(new ZodValidationPipe(SSearchClients)) query: SearchClientsQuery,
+    @Query() query: SearchClientsQueryDto,
     @CurrentUser() user: AuthUser,
   ): Promise<PaginatedResult<ClientSearchRowHttp>> {
     const result = await this.searchClientsUseCase.execute(query, user.sub);
@@ -56,7 +46,7 @@ export class ClientController {
   @RateLimitEndpoint('clients-list')
   @ClientDoc.List()
   async findAll(
-    @Query(new ZodValidationPipe(SFindAllClients)) query: FindAllClientsQuery,
+    @Query() query: FindAllClientsQueryDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<PaginatedResult<ClientPublicHttp>> {
     const result = await this.findAllClientsUseCase.execute(query);
@@ -79,7 +69,7 @@ export class ClientController {
   @RateLimitEndpoint('clients-create')
   @ClientDoc.Create()
   async create(
-    @Body(new ZodValidationPipe(SCreateClient)) dto: CreateClientBody,
+    @Body() dto: CreateClientBodyDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<ClientPublicHttp> {
     const client = await this.createClientUseCase.execute(dto);

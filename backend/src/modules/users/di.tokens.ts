@@ -7,8 +7,9 @@ import type { EmailVerificationCodeHasherPort } from 'src/modules/users/domain/p
 
 export const USER_REPOSITORY: InjectionToken<UserRepositoryPort> = Symbol('USER_REPOSITORY');
 
-export const USER_CREDENTIAL_REPOSITORY: InjectionToken<UserCredentialRepositoryPort> =
-  Symbol('USER_CREDENTIAL_REPOSITORY');
+export const USER_CREDENTIAL_REPOSITORY: InjectionToken<UserCredentialRepositoryPort> = Symbol(
+  'USER_CREDENTIAL_REPOSITORY',
+);
 
 export const PASSWORD_HASHER: InjectionToken<PasswordHasherPort> = Symbol('PASSWORD_HASHER');
 

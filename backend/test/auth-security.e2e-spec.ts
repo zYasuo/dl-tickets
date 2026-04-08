@@ -1,7 +1,8 @@
 import { BadRequestException, INestApplication, UnauthorizedException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { RateLimitGuard } from 'src/common/rate-limit/rate-limit.guard';
@@ -17,6 +18,8 @@ import { RefreshTokenUseCase } from 'src/modules/auth/application/use-cases/refr
 import { LogoutUseCase } from 'src/modules/auth/application/use-cases/logout.use-case';
 import { RequestPasswordResetUseCase } from 'src/modules/auth/application/use-cases/request-password-reset.use-case';
 import { ResetPasswordUseCase } from 'src/modules/auth/application/use-cases/reset-password.use-case';
+import { VerifyEmailOtpUseCase } from 'src/modules/auth/application/use-cases/verify-email-otp.use-case';
+import { ResendEmailVerificationUseCase } from 'src/modules/auth/application/use-cases/resend-email-verification.use-case';
 
 class MemoryRateLimitStore {
   private readonly counts = new Map<string, number>();
@@ -55,11 +58,14 @@ describe('Auth HTTP (e2e-style)', () => {
       ],
       controllers: [AuthController],
       providers: [
+        { provide: APP_PIPE, useClass: AppZodValidationPipe },
         { provide: LoginUseCase, useValue: loginUseCase },
         { provide: RefreshTokenUseCase, useValue: refreshUseCase },
         { provide: LogoutUseCase, useValue: logoutUseCase },
         { provide: RequestPasswordResetUseCase, useValue: requestResetUseCase },
         { provide: ResetPasswordUseCase, useValue: resetPasswordUseCase },
+        { provide: VerifyEmailOtpUseCase, useValue: { execute: jest.fn() } },
+        { provide: ResendEmailVerificationUseCase, useValue: { execute: jest.fn() } },
         { provide: APP_GUARD, useClass: RateLimitGuard },
       ],
     })

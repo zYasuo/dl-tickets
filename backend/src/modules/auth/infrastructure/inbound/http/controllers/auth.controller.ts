@@ -2,7 +2,6 @@ import { Body, Controller, HttpCode, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import { Public } from '../decorators/public.decorator';
 import { LoginUseCase } from 'src/modules/auth/application/use-cases/login.use-case';
 import { RefreshTokenUseCase } from 'src/modules/auth/application/use-cases/refresh-token.use-case';
@@ -11,23 +10,11 @@ import { RequestPasswordResetUseCase } from 'src/modules/auth/application/use-ca
 import { ResetPasswordUseCase } from 'src/modules/auth/application/use-cases/reset-password.use-case';
 import { VerifyEmailOtpUseCase } from 'src/modules/auth/application/use-cases/verify-email-otp.use-case';
 import { ResendEmailVerificationUseCase } from 'src/modules/auth/application/use-cases/resend-email-verification.use-case';
-import { SLogin, type LoginBody } from 'src/modules/auth/application/dto/login.dto';
-import {
-  SRequestPasswordReset,
-  type RequestPasswordResetBody,
-} from 'src/modules/auth/application/dto/request-password-reset.dto';
-import {
-  SResetPassword,
-  type ResetPasswordBody,
-} from 'src/modules/auth/application/dto/reset-password.dto';
-import {
-  SVerifyEmail,
-  type VerifyEmailBody,
-} from 'src/modules/auth/application/dto/verify-email.dto';
-import {
-  SResendEmailVerification,
-  type ResendEmailVerificationBody,
-} from 'src/modules/auth/application/dto/resend-email-verification.dto';
+import { LoginBodyDto } from 'src/modules/auth/application/dto/login.dto';
+import { RequestPasswordResetBodyDto } from 'src/modules/auth/application/dto/request-password-reset.dto';
+import { ResetPasswordBodyDto } from 'src/modules/auth/application/dto/reset-password.dto';
+import { VerifyEmailBodyDto } from 'src/modules/auth/application/dto/verify-email.dto';
+import { ResendEmailVerificationBodyDto } from 'src/modules/auth/application/dto/resend-email-verification.dto';
 import { ApiAuth, AuthDoc } from '../docs/auth-doc.decorator';
 import type { IAuthConfig } from 'src/modules/auth/config/auth.config';
 import {
@@ -55,7 +42,7 @@ export class AuthController {
   @AuthDoc.Login()
   @HttpCode(200)
   async login(
-    @Body(new ZodValidationPipe(SLogin)) dto: LoginBody,
+    @Body() dto: LoginBodyDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
     const result = await this.loginUseCase.execute(dto);
@@ -100,7 +87,7 @@ export class AuthController {
   @AuthDoc.PasswordResetRequest()
   @HttpCode(200)
   async requestPasswordReset(
-    @Body(new ZodValidationPipe(SRequestPasswordReset)) dto: RequestPasswordResetBody,
+    @Body() dto: RequestPasswordResetBodyDto,
   ): Promise<{ message: string }> {
     const message = await this.requestPasswordResetUseCase.execute(dto);
     return { message };
@@ -110,9 +97,7 @@ export class AuthController {
   @RateLimitEndpoint('auth-password-reset-confirm')
   @AuthDoc.PasswordResetConfirm()
   @HttpCode(200)
-  async confirmPasswordReset(
-    @Body(new ZodValidationPipe(SResetPassword)) dto: ResetPasswordBody,
-  ): Promise<{ message: string }> {
+  async confirmPasswordReset(@Body() dto: ResetPasswordBodyDto): Promise<{ message: string }> {
     await this.resetPasswordUseCase.execute(dto);
     return { message: 'Password has been updated' };
   }
@@ -121,9 +106,7 @@ export class AuthController {
   @RateLimitEndpoint('auth-email-verify')
   @AuthDoc.EmailVerify()
   @HttpCode(200)
-  async verifyEmail(
-    @Body(new ZodValidationPipe(SVerifyEmail)) dto: VerifyEmailBody,
-  ): Promise<{ message: string }> {
+  async verifyEmail(@Body() dto: VerifyEmailBodyDto): Promise<{ message: string }> {
     await this.verifyEmailOtpUseCase.execute(dto);
     return { message: 'Email verified successfully' };
   }
@@ -133,7 +116,7 @@ export class AuthController {
   @AuthDoc.EmailResend()
   @HttpCode(200)
   async resendEmailVerification(
-    @Body(new ZodValidationPipe(SResendEmailVerification)) dto: ResendEmailVerificationBody,
+    @Body() dto: ResendEmailVerificationBodyDto,
   ): Promise<{ message: string }> {
     const message = await this.resendEmailVerificationUseCase.execute(dto);
     return { message };

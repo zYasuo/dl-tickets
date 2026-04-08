@@ -1,7 +1,6 @@
 import { Body, Controller, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import type { PaginatedResult } from 'src/common/pagination/pagination.types';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import {
   CurrentUser,
   type AuthUser,
@@ -10,18 +9,9 @@ import { CreateClientContractUseCase } from 'src/modules/client-contracts/applic
 import { FindAllClientContractsUseCase } from 'src/modules/client-contracts/application/use-cases/find-all-client-contracts.use-case';
 import { FindClientContractByIdUseCase } from 'src/modules/client-contracts/application/use-cases/find-client-contract-by-id.use-case';
 import { UpdateClientContractUseCase } from 'src/modules/client-contracts/application/use-cases/update-client-contract.use-case';
-import {
-  SCreateClientContract,
-  type CreateClientContractBody,
-} from 'src/modules/client-contracts/application/dto/create-client-contract.dto';
-import {
-  SFindAllClientContracts,
-  type FindAllClientContractsQuery,
-} from 'src/modules/client-contracts/application/dto/find-all-client-contracts.dto';
-import {
-  SUpdateClientContract,
-  type UpdateClientContractBody,
-} from 'src/modules/client-contracts/application/dto/update-client-contract.dto';
+import { CreateClientContractBodyDto } from 'src/modules/client-contracts/application/dto/create-client-contract.dto';
+import { FindAllClientContractsQueryDto } from 'src/modules/client-contracts/application/dto/find-all-client-contracts.dto';
+import { UpdateClientContractBodyDto } from 'src/modules/client-contracts/application/dto/update-client-contract.dto';
 import { ApiClientContracts, ClientContractDoc } from '../docs/client-contract-doc.decorator';
 import {
   toClientContractPublicHttp,
@@ -41,7 +31,7 @@ export class ClientContractController {
   @RateLimitEndpoint('client-contracts-list')
   @ClientContractDoc.List()
   async findAll(
-    @Query(new ZodValidationPipe(SFindAllClientContracts)) query: FindAllClientContractsQuery,
+    @Query() query: FindAllClientContractsQueryDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<PaginatedResult<ClientContractPublicHttp>> {
     const result = await this.findAllClientContractsUseCase.execute(query);
@@ -64,7 +54,7 @@ export class ClientContractController {
   @RateLimitEndpoint('client-contracts-create')
   @ClientContractDoc.Create()
   async create(
-    @Body(new ZodValidationPipe(SCreateClientContract)) dto: CreateClientContractBody,
+    @Body() dto: CreateClientContractBodyDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<ClientContractPublicHttp> {
     const row = await this.createClientContractUseCase.execute(dto);
@@ -75,7 +65,7 @@ export class ClientContractController {
   @ClientContractDoc.Update()
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body(new ZodValidationPipe(SUpdateClientContract)) dto: UpdateClientContractBody,
+    @Body() dto: UpdateClientContractBodyDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<ClientContractPublicHttp> {
     const row = await this.updateClientContractUseCase.execute(id, dto);

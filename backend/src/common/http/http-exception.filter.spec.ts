@@ -1,12 +1,10 @@
 import { ArgumentsHost, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import type { Response } from 'express';
-import {
-  ApplicationException,
-  COMMON_API_ERROR_CODES,
-} from '../errors/application';
+import { ApplicationException, COMMON_API_ERROR_CODES } from '../errors/application';
 import { DomainError } from '../errors/domain.error';
 import { ConcurrencyError } from '../errors/concurrency.error';
 import { AUTH_API_ERROR_CODES } from 'src/modules/auth/application/auth-api-error-codes';
+import { ZodSerializationException } from 'nestjs-zod';
 import { HttpExceptionFilter } from './http-exception.filter';
 
 describe('HttpExceptionFilter', () => {
@@ -57,6 +55,24 @@ describe('HttpExceptionFilter', () => {
         code: COMMON_API_ERROR_CODES.CONFLICT,
       }),
     );
+  });
+
+  it('maps ZodSerializationException to 500 without leaking schema details', () => {
+    const json = jest.fn();
+    const status = jest.fn().mockReturnValue({ json });
+    const inner = new Error('schema mismatch');
+    filter.catch(new ZodSerializationException(inner), mockHost({ status } as unknown as Response));
+
+    expect(status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      }),
+    );
+    const bodyStr = JSON.stringify(json.mock.calls[0][0]);
+    expect(bodyStr).not.toContain('schema mismatch');
   });
 
   it('maps unknown errors to 500 without leaking stack trace', () => {
@@ -141,6 +157,27 @@ describe('HttpExceptionFilter', () => {
 
     expect(json).toHaveBeenCalledWith(
       expect.objectContaining({
+        code: COMMON_API_ERROR_CODES.VALIDATION_FAILED,
+      }),
+    );
+  });
+
+  it('maps errors from HttpException body to details in envelope', () => {
+    const json = jest.fn();
+    const status = jest.fn().mockReturnValue({ json });
+    const tree = { name: { errors: ['Too short'] } };
+    filter.catch(
+      new BadRequestException({
+        message: 'Validation failed',
+        code: COMMON_API_ERROR_CODES.VALIDATION_FAILED,
+        errors: tree,
+      }),
+      mockHost({ status } as unknown as Response),
+    );
+
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        details: tree,
         code: COMMON_API_ERROR_CODES.VALIDATION_FAILED,
       }),
     );

@@ -10,7 +10,6 @@ import {
   Post,
 } from '@nestjs/common';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import {
   CurrentUser,
   type AuthUser,
@@ -21,10 +20,8 @@ import { FindCountryByIdUseCase } from 'src/modules/locations/application/use-ca
 import { ListCountriesUseCase } from 'src/modules/locations/application/use-cases/list-countries.use-case';
 import { UpdateCountryUseCase } from 'src/modules/locations/application/use-cases/update-country.use-case';
 import {
-  SCreateCountry,
-  SUpdateCountry,
-  type CreateCountryBody,
-  type UpdateCountryBody,
+  CreateCountryBodyDto,
+  UpdateCountryBodyDto,
 } from 'src/modules/locations/application/dto/country.dto';
 import { ApiLocationsCountries, CountryDoc } from '../docs/location-docs.decorator';
 import { toCountryPublicHttp, type CountryPublicHttp } from '../mappers/location-http.mapper';
@@ -63,7 +60,7 @@ export class CountryController {
   @CountryDoc.Create()
   @Post()
   async create(
-    @Body(new ZodValidationPipe(SCreateCountry)) body: CreateCountryBody,
+    @Body() body: CreateCountryBodyDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<CountryPublicHttp> {
     const row = await this.createCountry.execute(body);
@@ -75,7 +72,7 @@ export class CountryController {
   @Patch(':id')
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body(new ZodValidationPipe(SUpdateCountry)) body: UpdateCountryBody,
+    @Body() body: UpdateCountryBodyDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<CountryPublicHttp> {
     const row = await this.updateCountry.execute(id, body);

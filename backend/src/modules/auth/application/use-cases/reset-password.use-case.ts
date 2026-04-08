@@ -34,15 +34,24 @@ export class ResetPasswordUseCase {
     const reset = await this.passwordResetRepository.findByTokenHash(tokenHash);
 
     if (!reset) {
-      throw new ApplicationException(AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN, INVALID_RESET_TOKEN_MSG);
+      throw new ApplicationException(
+        AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN,
+        INVALID_RESET_TOKEN_MSG,
+      );
     }
 
     if (reset.isUsed) {
-      throw new ApplicationException(AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN, INVALID_RESET_TOKEN_MSG);
+      throw new ApplicationException(
+        AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN,
+        INVALID_RESET_TOKEN_MSG,
+      );
     }
 
     if (reset.isExpired) {
-      throw new ApplicationException(AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN, INVALID_RESET_TOKEN_MSG);
+      throw new ApplicationException(
+        AUTH_API_ERROR_CODES.INVALID_RESET_TOKEN,
+        INVALID_RESET_TOKEN_MSG,
+      );
     }
 
     const hashedPassword = await this.passwordHasher.hash(input.newPassword);

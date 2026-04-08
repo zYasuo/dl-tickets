@@ -11,18 +11,14 @@ import {
   Query,
 } from '@nestjs/common';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import {
   CurrentUser,
   type AuthUser,
 } from 'src/modules/auth/infrastructure/inbound/http/decorators/current-user.decorator';
 import {
-  SCreateState,
-  SListStatesQuery,
-  SUpdateState,
-  type CreateStateBody,
-  type ListStatesQuery,
-  type UpdateStateBody,
+  CreateStateBodyDto,
+  ListStatesQueryDto,
+  UpdateStateBodyDto,
 } from 'src/modules/locations/application/dto/state.dto';
 import { CreateStateUseCase } from 'src/modules/locations/application/use-cases/create-state.use-case';
 import { DeleteStateUseCase } from 'src/modules/locations/application/use-cases/delete-state.use-case';
@@ -47,7 +43,7 @@ export class StateController {
   @StateDoc.List()
   @Get()
   async list(
-    @Query(new ZodValidationPipe(SListStatesQuery)) query: ListStatesQuery,
+    @Query() query: ListStatesQueryDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<StatePublicHttp[]> {
     const rows = await this.listStates.execute(query);
@@ -69,7 +65,7 @@ export class StateController {
   @StateDoc.Create()
   @Post()
   async create(
-    @Body(new ZodValidationPipe(SCreateState)) body: CreateStateBody,
+    @Body() body: CreateStateBodyDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<StatePublicHttp> {
     const row = await this.createState.execute(body);
@@ -81,7 +77,7 @@ export class StateController {
   @Patch(':id')
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body(new ZodValidationPipe(SUpdateState)) body: UpdateStateBody,
+    @Body() body: UpdateStateBodyDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<StatePublicHttp> {
     const row = await this.updateState.execute(id, body);

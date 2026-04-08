@@ -7,5 +7,4 @@ export const AUTH_API_ERROR_CODES = {
   INVALID_RESET_TOKEN: 'AUTH_INVALID_RESET_TOKEN',
 } as const;
 
-export type AuthApiErrorCode =
-  (typeof AUTH_API_ERROR_CODES)[keyof typeof AUTH_API_ERROR_CODES];
+export type AuthApiErrorCode = (typeof AUTH_API_ERROR_CODES)[keyof typeof AUTH_API_ERROR_CODES];

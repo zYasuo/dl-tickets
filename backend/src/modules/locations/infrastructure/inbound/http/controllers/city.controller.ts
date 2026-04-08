@@ -11,18 +11,14 @@ import {
   Query,
 } from '@nestjs/common';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import {
   CurrentUser,
   type AuthUser,
 } from 'src/modules/auth/infrastructure/inbound/http/decorators/current-user.decorator';
 import {
-  SCreateCity,
-  SListCitiesQuery,
-  SUpdateCity,
-  type CreateCityBody,
-  type ListCitiesQuery,
-  type UpdateCityBody,
+  CreateCityBodyDto,
+  ListCitiesQueryDto,
+  UpdateCityBodyDto,
 } from 'src/modules/locations/application/dto/city.dto';
 import { CreateCityUseCase } from 'src/modules/locations/application/use-cases/create-city.use-case';
 import { DeleteCityUseCase } from 'src/modules/locations/application/use-cases/delete-city.use-case';
@@ -47,7 +43,7 @@ export class CityController {
   @CityDoc.List()
   @Get()
   async list(
-    @Query(new ZodValidationPipe(SListCitiesQuery)) query: ListCitiesQuery,
+    @Query() query: ListCitiesQueryDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<CityPublicHttp[]> {
     const rows = await this.listCities.execute(query);
@@ -69,7 +65,7 @@ export class CityController {
   @CityDoc.Create()
   @Post()
   async create(
-    @Body(new ZodValidationPipe(SCreateCity)) body: CreateCityBody,
+    @Body() body: CreateCityBodyDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<CityPublicHttp> {
     const row = await this.createCity.execute(body);
@@ -81,7 +77,7 @@ export class CityController {
   @Patch(':id')
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body(new ZodValidationPipe(SUpdateCity)) body: UpdateCityBody,
+    @Body() body: UpdateCityBodyDto,
     @CurrentUser() _user: AuthUser,
   ): Promise<CityPublicHttp> {
     const row = await this.updateCity.execute(id, body);

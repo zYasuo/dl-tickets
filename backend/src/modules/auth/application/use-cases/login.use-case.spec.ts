@@ -111,9 +111,7 @@ describe('LoginUseCase', () => {
       code: AUTH_API_ERROR_CODES.ACCOUNT_LOCKED,
     });
 
-    expect(
-      resolveApplicationErrorHttp(AUTH_API_ERROR_CODES.ACCOUNT_LOCKED)?.statusCode,
-    ).toBe(429);
+    expect(resolveApplicationErrorHttp(AUTH_API_ERROR_CODES.ACCOUNT_LOCKED)?.statusCode).toBe(429);
 
     expect(passwordHasher.compare).not.toHaveBeenCalled();
     expect(credentialRepository.recordFailedLoginAttempt).not.toHaveBeenCalled();

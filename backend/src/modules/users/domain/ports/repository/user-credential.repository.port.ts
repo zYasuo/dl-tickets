@@ -1,4 +1,7 @@
-import type { CreateUserCredentialInput, UserCredentialEntity } from '../../entities/user-credential.entity';
+import type {
+  CreateUserCredentialInput,
+  UserCredentialEntity,
+} from '../../entities/user-credential.entity';
 
 export abstract class UserCredentialRepositoryPort {
   abstract create(input: CreateUserCredentialInput): Promise<UserCredentialEntity>;

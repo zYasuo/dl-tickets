@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { AppZodValidationPipe } from '../common/pipes/app-zod-validation.pipe';
 import { RateLimitGuard } from '../common/rate-limit/rate-limit.guard';
 import { RateLimitModule } from '../common/rate-limit/rate-limit.module';
 import { rateLimitConfig } from '../config/rate-limit.config';
@@ -34,6 +35,10 @@ import { JwtAuthGuard } from './auth/infrastructure/inbound/http/guards/jwt-auth
     ClientContractsModule,
   ],
   providers: [
+    {
+      provide: APP_PIPE,
+      useClass: AppZodValidationPipe,
+    },
     {
       provide: APP_GUARD,
       useClass: RateLimitGuard,

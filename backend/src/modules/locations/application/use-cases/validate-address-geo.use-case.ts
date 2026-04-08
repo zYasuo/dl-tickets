@@ -12,10 +12,7 @@ export class ValidateAddressGeoUseCase {
   async execute(stateUuid: string, cityUuid: string): Promise<AddressGeoResolved> {
     const city = await this.cityRepository.findByUuidWithState(cityUuid);
     if (!city) {
-      throw new ApplicationException(
-        LOCATION_API_ERROR_CODES.GEO_CITY_NOT_FOUND,
-        'City not found',
-      );
+      throw new ApplicationException(LOCATION_API_ERROR_CODES.GEO_CITY_NOT_FOUND, 'City not found');
     }
     if (city.state.uuid !== stateUuid) {
       throw new ApplicationException(

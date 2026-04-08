@@ -1,7 +1,8 @@
 import { ExecutionContext, INestApplication } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { randomUUID } from 'node:crypto';
@@ -126,6 +127,7 @@ describe('Tickets HTTP (e2e-style)', () => {
       imports: [ConfigModule.forRoot({ isGlobal: true, load: [rateLimitConfig] }), RateLimitModule],
       controllers: [TicketController],
       providers: [
+        { provide: APP_PIPE, useClass: AppZodValidationPipe },
         { provide: APP_GUARD, useClass: RateLimitGuard },
         {
           provide: APP_GUARD,

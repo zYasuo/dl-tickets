@@ -13,7 +13,7 @@ export const SUpdateState = z.object({
 });
 
 export const SListStatesQuery = z.object({
-  countryUuid: z.string().uuid(),
+  countryUuid: z.uuid(),
 });
 
 export type CreateStateBody = z.infer<typeof SCreateState>;
@@ -22,3 +22,4 @@ export type ListStatesQuery = z.infer<typeof SListStatesQuery>;
 
 export class CreateStateBodyDto extends createZodDto(SCreateState) {}
 export class UpdateStateBodyDto extends createZodDto(SUpdateState) {}
+export class ListStatesQueryDto extends createZodDto(SListStatesQuery) {}
