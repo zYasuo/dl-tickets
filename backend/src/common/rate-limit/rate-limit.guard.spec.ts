@@ -1,18 +1,18 @@
 import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import type { Request } from 'express';
+import type { FastifyRequest } from 'fastify';
 import type { RateLimitConfig } from '../../config/rate-limit.config';
 import { RateLimitGuard } from './rate-limit.guard';
 import type { RateLimitRedisStore } from './rate-limit-redis.store';
 
-function httpContext(req: Partial<Request>): ExecutionContext {
+function httpContext(req: Partial<FastifyRequest>): ExecutionContext {
   const handler = jest.fn();
   const controllerClass = class TestController {};
   const merged = {
     ...req,
     headers: { ...(req.headers ?? {}) },
-  } as Request;
+  } as FastifyRequest;
 
   return {
     getType: () => 'http',
@@ -25,12 +25,12 @@ function httpContext(req: Partial<Request>): ExecutionContext {
 }
 
 describe('RateLimitGuard', () => {
-  const rateLimits: RateLimitConfig = {
+  const rateLimits = {
     'users-register': { max: 2, windowSeconds: 60 },
     'tickets-list': { max: 10, windowSeconds: 60 },
     'tickets-create': { max: 10, windowSeconds: 60 },
     'tickets-update': { max: 10, windowSeconds: 60 },
-  };
+  } as RateLimitConfig;
 
   let configService: ConfigService;
   let store: jest.Mocked<Pick<RateLimitRedisStore, 'increment'>>;
@@ -105,7 +105,7 @@ describe('RateLimitGuard', () => {
     }
   });
 
-  it('does not use x-forwarded-for; uses req.ip (set by Express when trust proxy is on)', async () => {
+  it('does not use x-forwarded-for; uses req.ip (set by Fastify when trust proxy is on)', async () => {
     const reflector = {
       getAllAndOverride: jest.fn().mockReturnValue('tickets-list'),
     } as unknown as Reflector;
@@ -135,7 +135,7 @@ describe('RateLimitGuard', () => {
     );
     const ctx = httpContext({
       ip: undefined,
-      socket: { remoteAddress: '::1' } as unknown as Request['socket'],
+      socket: { remoteAddress: '::1' } as unknown as FastifyRequest['socket'],
     });
     await guard.canActivate(ctx);
     expect(store.increment).toHaveBeenCalledWith('tickets-list:::1', 60);

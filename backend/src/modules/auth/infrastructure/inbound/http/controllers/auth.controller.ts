@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, Req, Res } from '@nestjs/common';
-import type { Request, Response } from 'express';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitEndpoint } from 'src/common/rate-limit/rate-limit-endpoint.decorator';
 import { Public } from '../decorators/public.decorator';
@@ -19,6 +19,7 @@ import { ApiAuth, AuthDoc } from '../docs/auth-doc.decorator';
 import type { IAuthConfig } from 'src/modules/auth/config/auth.config';
 import {
   clearRefreshTokenCookie,
+  normalizeCookieHeader,
   readRefreshTokenFromRequest,
   setRefreshTokenCookie,
 } from '../utils/refresh-cookie';
@@ -43,7 +44,7 @@ export class AuthController {
   @HttpCode(200)
   async login(
     @Body() dto: LoginBodyDto,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<{ accessToken: string }> {
     const result = await this.loginUseCase.execute(dto);
     const auth = this.configService.get<IAuthConfig>('auth')!;
@@ -57,10 +58,10 @@ export class AuthController {
   @AuthDoc.Refresh()
   @HttpCode(200)
   async refresh(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Req() req: FastifyRequest,
+    @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<{ accessToken: string }> {
-    const raw = readRefreshTokenFromRequest(req.headers.cookie);
+    const raw = readRefreshTokenFromRequest(normalizeCookieHeader(req.headers.cookie));
     const result = await this.refreshTokenUseCase.execute(raw ?? '');
     const auth = this.configService.get<IAuthConfig>('auth')!;
     const maxAgeMs = auth.refreshExpirationDays * 24 * 60 * 60 * 1000;
@@ -73,10 +74,10 @@ export class AuthController {
   @AuthDoc.Logout()
   @HttpCode(200)
   async logout(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Req() req: FastifyRequest,
+    @Res({ passthrough: true }) res: FastifyReply,
   ): Promise<{ message: string }> {
-    const raw = readRefreshTokenFromRequest(req.headers.cookie);
+    const raw = readRefreshTokenFromRequest(normalizeCookieHeader(req.headers.cookie));
     await this.logoutUseCase.execute(raw ?? '');
     clearRefreshTokenCookie(res);
     return { message: 'Signed out' };

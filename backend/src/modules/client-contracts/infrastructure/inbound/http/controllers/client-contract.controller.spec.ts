@@ -1,8 +1,10 @@
-import { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common';
+import { CanActivate, ExecutionContext } from '@nestjs/common';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import { randomUUID } from 'node:crypto';
+import { createNestFastifyTestingApp } from 'src/test-support/create-nest-fastify-testing-app';
 import { requestNest } from 'src/test-support/supertest-nest-app';
 import { CreateClientContractUseCase } from 'src/modules/client-contracts/application/use-cases/create-client-contract.use-case';
 import { FindAllClientContractsUseCase } from 'src/modules/client-contracts/application/use-cases/find-all-client-contracts.use-case';
@@ -15,7 +17,7 @@ import {
 import { ClientContractController } from './client-contract.controller';
 
 describe('ClientContractController', () => {
-  let app: INestApplication;
+  let app: NestFastifyApplication;
   let createUc: jest.Mocked<Pick<CreateClientContractUseCase, 'execute'>>;
   let findAllUc: jest.Mocked<Pick<FindAllClientContractsUseCase, 'execute'>>;
   let findByIdUc: jest.Mocked<Pick<FindClientContractByIdUseCase, 'execute'>>;
@@ -49,9 +51,9 @@ describe('ClientContractController', () => {
       ],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1');
-    await app.init();
+    app = await createNestFastifyTestingApp(moduleFixture, async (a) => {
+      a.setGlobalPrefix('api/v1');
+    });
   });
 
   afterEach(async () => {

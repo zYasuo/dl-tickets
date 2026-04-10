@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { FastifyReply } from 'fastify';
 import {
   ApplicationException,
   COMMON_API_ERROR_CODES,
@@ -23,10 +23,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const res = ctx.getResponse<Response>();
+    const res = ctx.getResponse<FastifyReply>();
 
     const body = this.toErrorBody(exception);
-    res.status(body.statusCode).json(body);
+    res.status(body.statusCode).send(body);
   }
 
   private toErrorBody(exception: unknown): HttpErrorEnvelope {

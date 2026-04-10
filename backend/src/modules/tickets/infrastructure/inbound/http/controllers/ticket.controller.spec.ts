@@ -1,8 +1,10 @@
-import { CanActivate, ExecutionContext, INestApplication } from '@nestjs/common';
+import { CanActivate, ExecutionContext } from '@nestjs/common';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import { randomUUID } from 'node:crypto';
+import { createNestFastifyTestingApp } from 'src/test-support/create-nest-fastify-testing-app';
 import { requestNest } from 'src/test-support/supertest-nest-app';
 import { CreateTicketUseCase } from 'src/modules/tickets/application/use-case/create-ticket.use-case';
 import { FindAllTicketsUseCase } from 'src/modules/tickets/application/use-case/find-all-tickets.use-case';
@@ -13,7 +15,7 @@ import { TicketEntity, TicketStatus } from 'src/modules/tickets/domain/entities/
 import { TicketController } from './ticket.controller';
 
 describe('TicketController (integration)', () => {
-  let app: INestApplication;
+  let app: NestFastifyApplication;
   let createTicket: jest.Mocked<Pick<CreateTicketUseCase, 'execute'>>;
   let findAllTickets: jest.Mocked<Pick<FindAllTicketsUseCase, 'execute'>>;
   let updateTicket: jest.Mocked<Pick<UpdateTicketUseCase, 'execute'>>;
@@ -49,9 +51,9 @@ describe('TicketController (integration)', () => {
       ],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1');
-    await app.init();
+    app = await createNestFastifyTestingApp(moduleFixture, async (a) => {
+      a.setGlobalPrefix('api/v1');
+    });
   });
 
   afterEach(async () => {

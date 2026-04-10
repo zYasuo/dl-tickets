@@ -9,7 +9,7 @@ import {
 import { COMMON_API_ERROR_CODES } from '../errors/application';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import type { Request } from 'express';
+import type { FastifyRequest } from 'fastify';
 import { RATE_LIMIT_STORE, type RateLimitStore } from './di.tokens';
 import type { RateLimitConfig, RateLimitEndpointKey } from '../../config/rate-limit.config';
 import { RATE_LIMIT_ENDPOINT_KEY } from './rate-limit-endpoint.decorator';
@@ -40,7 +40,7 @@ export class RateLimitGuard implements CanActivate {
     const rateLimits = this.configService.getOrThrow<RateLimitConfig>('rateLimit');
     const entry = rateLimits[endpoint];
 
-    const req = context.switchToHttp().getRequest<Request>();
+    const req = context.switchToHttp().getRequest<FastifyRequest>();
     const tracker = this.clientIp(req);
     const key = `${endpoint}:${tracker}`;
 
@@ -58,7 +58,7 @@ export class RateLimitGuard implements CanActivate {
     return true;
   }
 
-  private clientIp(req: Request): string {
+  private clientIp(req: FastifyRequest): string {
     return req.ip ?? req.socket.remoteAddress ?? 'unknown';
   }
 }

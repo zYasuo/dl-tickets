@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { COMMON_API_ERROR_CODES } from 'src/common/errors/application';
 import { Reflector } from '@nestjs/core';
-import type { Request } from 'express';
+import type { FastifyRequest } from 'fastify';
 import type { TokenProviderPort } from 'src/modules/auth/domain/ports/security/token-provider.port';
 import { TOKEN_PROVIDER } from '../../../../di.tokens';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -34,7 +34,7 @@ export class JwtAuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<FastifyRequest>();
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
@@ -46,7 +46,7 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const payload = await this.tokenProvider.verifyAccessToken(token);
-      (request as Request & { user: AuthUser }).user = {
+      (request as FastifyRequest & { user: AuthUser }).user = {
         sub: payload.sub,
         email: payload.email,
       };
@@ -60,7 +60,7 @@ export class JwtAuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
+  private extractTokenFromHeader(request: FastifyRequest): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }

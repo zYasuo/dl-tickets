@@ -1,7 +1,8 @@
 import 'dotenv/config';
+import fastifyCookie from '@fastify/cookie';
 import { NestFactory } from '@nestjs/core';
 import { parseProcessEnv } from './config/env.schema';
-import { NestExpressApplication } from '@nestjs/platform-express';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './modules/app.module';
 import { getTrustProxySetting } from './common/http/trust-proxy';
@@ -13,11 +14,14 @@ import { setupOpenApiDocs } from './common/openapi/setup-openapi-docs';
 
 async function bootstrap() {
   parseProcessEnv();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const trust = getTrustProxySetting();
-  if (trust !== false) {
-    app.set('trust proxy', trust);
-  }
+  const fastifyAdapter = new FastifyAdapter({
+    ...(trust !== false ? { trustProxy: true } : {}),
+  });
+
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, fastifyAdapter);
+
+  await app.register(fastifyCookie);
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.REDIS,
@@ -37,6 +41,7 @@ async function bootstrap() {
     });
   }
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = Number(process.env.PORT ?? 3000);
+  await app.listen(port, '0.0.0.0');
 }
 void bootstrap();

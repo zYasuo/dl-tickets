@@ -1,10 +1,10 @@
-import { BadRequestException, INestApplication, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import request from 'supertest';
-import { App } from 'supertest/types';
 import { RateLimitGuard } from 'src/common/rate-limit/rate-limit.guard';
 import { RateLimitModule } from 'src/common/rate-limit/rate-limit.module';
 import { RateLimitRedisStore } from 'src/common/rate-limit/rate-limit-redis.store';
@@ -20,6 +20,7 @@ import { RequestPasswordResetUseCase } from 'src/modules/auth/application/use-ca
 import { ResetPasswordUseCase } from 'src/modules/auth/application/use-cases/reset-password.use-case';
 import { VerifyEmailOtpUseCase } from 'src/modules/auth/application/use-cases/verify-email-otp.use-case';
 import { ResendEmailVerificationUseCase } from 'src/modules/auth/application/use-cases/resend-email-verification.use-case';
+import { createNestFastifyTestingApp } from 'src/test-support/create-nest-fastify-testing-app';
 
 class MemoryRateLimitStore {
   private readonly counts = new Map<string, number>();
@@ -34,7 +35,7 @@ class MemoryRateLimitStore {
 type ApiEnvelope<T> = { success: boolean; data: T };
 
 describe('Auth HTTP (e2e-style)', () => {
-  let app: INestApplication<App>;
+  let app: NestFastifyApplication;
   let loginUseCase: jest.Mocked<Pick<LoginUseCase, 'execute'>>;
   let refreshUseCase: jest.Mocked<Pick<RefreshTokenUseCase, 'execute'>>;
   let logoutUseCase: jest.Mocked<Pick<LogoutUseCase, 'execute'>>;
@@ -73,11 +74,11 @@ describe('Auth HTTP (e2e-style)', () => {
       .useValue(new MemoryRateLimitStore())
       .compile();
 
-    app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1');
-    app.useGlobalInterceptors(new TransformResponseInterceptor());
-    app.useGlobalFilters(new HttpExceptionFilter());
-    await app.init();
+    app = await createNestFastifyTestingApp(moduleFixture, async (a) => {
+      a.setGlobalPrefix('api/v1');
+      a.useGlobalInterceptors(new TransformResponseInterceptor());
+      a.useGlobalFilters(new HttpExceptionFilter());
+    });
   });
 
   afterEach(async () => {

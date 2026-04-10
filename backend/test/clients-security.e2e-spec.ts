@@ -1,10 +1,9 @@
-import { INestApplication } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import request from 'supertest';
-import { App } from 'supertest/types';
 import { randomUUID } from 'node:crypto';
 import { RateLimitGuard } from 'src/common/rate-limit/rate-limit.guard';
 import { RateLimitModule } from 'src/common/rate-limit/rate-limit.module';
@@ -20,6 +19,7 @@ import { CreateClientUseCase } from 'src/modules/clients/application/use-cases/c
 import { FindAllClientsUseCase } from 'src/modules/clients/application/use-cases/find-all-clients.use-case';
 import { FindClientByIdUseCase } from 'src/modules/clients/application/use-cases/find-client-by-id.use-case';
 import { SearchClientsUseCase } from 'src/modules/clients/application/use-cases/search-clients.use-case';
+import { createNestFastifyTestingApp } from 'src/test-support/create-nest-fastify-testing-app';
 
 class MemoryRateLimitStore {
   private readonly counts = new Map<string, number>();
@@ -45,7 +45,7 @@ const emptyList = {
 };
 
 describe('Clients security (e2e-style)', () => {
-  let app: INestApplication<App>;
+  let app: NestFastifyApplication;
   let tokenProvider: jest.Mocked<Pick<TokenProviderPort, 'verifyAccessToken'>>;
   let findAllClients: jest.Mocked<Pick<FindAllClientsUseCase, 'execute'>>;
 
@@ -77,17 +77,16 @@ describe('Clients security (e2e-style)', () => {
       .useValue(new MemoryRateLimitStore())
       .compile();
 
-    app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1');
-    app.useGlobalInterceptors(new TransformResponseInterceptor());
-    app.useGlobalFilters(new HttpExceptionFilter());
+    app = await createNestFastifyTestingApp(moduleFixture, async (a) => {
+      a.setGlobalPrefix('api/v1');
+      a.useGlobalInterceptors(new TransformResponseInterceptor());
+      a.useGlobalFilters(new HttpExceptionFilter());
 
-    const config = app.get(ConfigService);
-    const rl =
-      config.getOrThrow<Record<string, { max: number; windowSeconds: number }>>('rateLimit');
-    rl['clients-list'] = { max: 1, windowSeconds: 60 };
-
-    await app.init();
+      const config = a.get(ConfigService);
+      const rl =
+        config.getOrThrow<Record<string, { max: number; windowSeconds: number }>>('rateLimit');
+      rl['clients-list'] = { max: 1, windowSeconds: 60 };
+    });
   });
 
   afterEach(async () => {

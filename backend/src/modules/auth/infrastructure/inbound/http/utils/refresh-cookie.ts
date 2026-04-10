@@ -1,6 +1,17 @@
-import type { Response } from 'express';
+import type { IncomingHttpHeaders } from 'node:http';
+import type { FastifyReply } from 'fastify';
 
 export const REFRESH_TOKEN_COOKIE = 'refreshToken';
+
+export function normalizeCookieHeader(cookie: IncomingHttpHeaders['cookie']): string | undefined {
+  if (cookie === undefined) return undefined;
+  if (typeof cookie === 'string') return cookie;
+  if (Array.isArray(cookie)) {
+    const first = cookie[0];
+    return typeof first === 'string' ? first : undefined;
+  }
+  return undefined;
+}
 export const REFRESH_COOKIE_PATH = '/api/v1/auth';
 
 export function readRefreshTokenFromRequest(cookieHeader: string | undefined): string | undefined {
@@ -17,21 +28,20 @@ export function readRefreshTokenFromRequest(cookieHeader: string | undefined): s
   return undefined;
 }
 
-export function setRefreshTokenCookie(res: Response, token: string, maxAgeMs: number): void {
-  res.cookie(REFRESH_TOKEN_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: REFRESH_COOKIE_PATH,
+const cookieBase = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  path: REFRESH_COOKIE_PATH,
+};
+
+export function setRefreshTokenCookie(res: FastifyReply, token: string, maxAgeMs: number): void {
+  res.setCookie(REFRESH_TOKEN_COOKIE, token, {
+    ...cookieBase,
     maxAge: maxAgeMs,
   });
 }
 
-export function clearRefreshTokenCookie(res: Response): void {
-  res.clearCookie(REFRESH_TOKEN_COOKIE, {
-    path: REFRESH_COOKIE_PATH,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  });
+export function clearRefreshTokenCookie(res: FastifyReply): void {
+  res.clearCookie(REFRESH_TOKEN_COOKIE, cookieBase);
 }

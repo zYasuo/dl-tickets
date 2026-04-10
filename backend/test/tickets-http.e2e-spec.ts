@@ -1,10 +1,10 @@
-import { ExecutionContext, INestApplication } from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
 import request from 'supertest';
-import { App } from 'supertest/types';
 import { randomUUID } from 'node:crypto';
 import { RateLimitGuard } from 'src/common/rate-limit/rate-limit.guard';
 import { RateLimitModule } from 'src/common/rate-limit/rate-limit.module';
@@ -28,7 +28,8 @@ import { TicketCacheKeyBuilder } from 'src/modules/tickets/application/cache/tic
 import type { TicketRepositoryPort } from 'src/modules/tickets/domain/ports/repository/ticket.repository.port';
 import { TicketController } from 'src/modules/tickets/infrastructure/inbound/http/controllers/ticket.controller';
 import { UserEntity } from 'src/modules/users/domain/entities/user.entity';
-import type { Request } from 'express';
+import type { FastifyRequest } from 'fastify';
+import { createNestFastifyTestingApp } from 'src/test-support/create-nest-fastify-testing-app';
 
 class MemoryRateLimitStore {
   private readonly counts = new Map<string, number>();
@@ -98,7 +99,7 @@ type TicketsListEnvelope = {
 };
 
 describe('Tickets HTTP (e2e-style)', () => {
-  let app: INestApplication<App>;
+  let app: NestFastifyApplication;
   const e2eUserUuid = randomUUID();
 
   beforeEach(async () => {
@@ -135,7 +136,7 @@ describe('Tickets HTTP (e2e-style)', () => {
             canActivate: (context: ExecutionContext) => {
               const req = context
                 .switchToHttp()
-                .getRequest<Request & { user: { sub: string; email: string } }>();
+                .getRequest<FastifyRequest & { user: { sub: string; email: string } }>();
               req.user = { sub: e2eUserUuid, email: 'e2e@example.com' };
               return true;
             },
@@ -187,11 +188,11 @@ describe('Tickets HTTP (e2e-style)', () => {
       .useValue(new MemoryRateLimitStore())
       .compile();
 
-    app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1');
-    app.useGlobalInterceptors(new TransformResponseInterceptor());
-    app.useGlobalFilters(new HttpExceptionFilter());
-    await app.init();
+    app = await createNestFastifyTestingApp(moduleFixture, async (a) => {
+      a.setGlobalPrefix('api/v1');
+      a.useGlobalInterceptors(new TransformResponseInterceptor());
+      a.useGlobalFilters(new HttpExceptionFilter());
+    });
   });
 
   afterEach(async () => {

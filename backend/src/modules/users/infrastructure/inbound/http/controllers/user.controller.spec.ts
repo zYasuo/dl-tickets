@@ -1,10 +1,11 @@
-import { INestApplication } from '@nestjs/common';
+import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_PIPE } from '@nestjs/core';
 import { randomUUID } from 'node:crypto';
 import { ApplicationException } from 'src/common/errors/application';
 import { HttpExceptionFilter } from 'src/common/http/http-exception.filter';
 import { AppZodValidationPipe } from 'src/common/pipes/app-zod-validation.pipe';
+import { createNestFastifyTestingApp } from 'src/test-support/create-nest-fastify-testing-app';
 import { requestNest } from 'src/test-support/supertest-nest-app';
 import { USER_API_ERROR_CODES } from 'src/modules/users/application/errors';
 import { CreateUserUseCase } from 'src/modules/users/application/use-cases/create-user.use-case';
@@ -12,7 +13,7 @@ import { UserEntity } from 'src/modules/users/domain/entities/user.entity';
 import { UserController } from './user.controller';
 
 describe('UserController (integration)', () => {
-  let app: INestApplication;
+  let app: NestFastifyApplication;
   let createUser: jest.Mocked<Pick<CreateUserUseCase, 'execute'>>;
 
   const now = new Date('2025-06-01T12:00:00.000Z');
@@ -31,10 +32,10 @@ describe('UserController (integration)', () => {
       ],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
-    app.useGlobalFilters(new HttpExceptionFilter());
-    app.setGlobalPrefix('api/v1');
-    await app.init();
+    app = await createNestFastifyTestingApp(moduleFixture, async (a) => {
+      a.useGlobalFilters(new HttpExceptionFilter());
+      a.setGlobalPrefix('api/v1');
+    });
   });
 
   afterEach(async () => {
